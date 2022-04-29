@@ -4,8 +4,8 @@ x = "new number"
 
 path = os.path.join("C:/Users/pierr/Documents/GitHub/QARM", "Data QARM.xlsx")
 
-y = pd.read_excel(path, engine="openpyxl", sheet_name="CO2 Emissions")
+#y = pd.read_excel(path, engine="openpyxl", sheet_name="CO2 Emissions")
+z = pd.read_csv("/Users/defalt/Documents/GitHub/QARM/Market cap.csv", on_bad_lines="skip")
 
-print(y)
-
+print(z)
 
