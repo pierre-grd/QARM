@@ -5,6 +5,7 @@ x = "new number"
 co_2 = pd.read_excel("Data QARM.xlsx", engine="openpyxl", sheet_name="CO2 Emissions")
 
 market_cap = pd.read_excel("Data QARM.xlsx", engine="openpyxl", sheet_name="Market Cap")
+y = pd.read_excel("Data QARM.xlsx", engine="openpyxl", sheet_name="CO2 Emissions")
 
 revenue = pd.read_excel("Data QARM.xlsx", engine="openpyxl", sheet_name="Revenue")
 
