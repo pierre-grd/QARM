@@ -2,10 +2,15 @@ import os
 import pandas as pd
 x = "new number"
 
-path = os.path.join("C:/Users/pierr/Documents/GitHub/QARM", "Data QARM.xlsx")
+co_2 = pd.read_excel("Data QARM.xlsx", engine="openpyxl", sheet_name="CO2 Emissions")
 
-y = pd.read_excel("/Users/defalt/Documents/GitHub/QARM/Data QARM.xlsx", engine="openpyxl", sheet_name="CO2 Emissions")
-#u = pd.read_csv("/Users/defalt/Documents/GitHub/QARM/Market cap.csv", on_bad_lines="skip", header=0)
+market_cap = pd.read_excel("Data QARM.xlsx", engine="openpyxl", sheet_name="Market Cap")
 
-print(y.iloc[1:1])
+revenue = pd.read_excel("Data QARM.xlsx", engine="openpyxl", sheet_name="Revenue")
+
+tt_return_index = pd.read_excel("Data QARM.xlsx", engine="openpyxl", sheet_name="TT Return Index")
+
+
+
+print(y.iloc[::1])
 
