@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+<<<<<<< HEAD
   <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.10 (QARM)" project-jdk-type="Python SDK" />
+=======
+  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.9 (EMF-env)" project-jdk-type="Python SDK" />
+>>>>>>> 593d55e161c8cf9585c4deca50e599f56d0d2749
 </project>
