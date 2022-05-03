@@ -58,4 +58,9 @@ Industrials = market_cap()
 # Question 3 -----------------------
 
 
+revenue = revenue.dropna()
+print(revenue)
+
+
+
 
