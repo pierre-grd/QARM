@@ -15,3 +15,7 @@ tt_return_index = pd.read_excel("Data QARM.xlsx", engine="openpyxl", sheet_name=
 
 print(y.iloc[::1])
 
+# Question 2
+
+
+
