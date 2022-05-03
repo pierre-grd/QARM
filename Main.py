@@ -3,38 +3,51 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-x = "new number"
 
-# co_2 = pd.read_excel("Data QARM.xlsx", engine="openpyxl", sheet_name="CO2 Emissions")
-
+co_2 = pd.read_excel("Data QARM.xlsx", engine="openpyxl", sheet_name="CO2 Emissions")
 market_cap = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Market Cap")
-# y = pd.read_excel("Data QARM.xlsx", engine="openpyxl", sheet_name="CO2 Emissions")
 feuille1 = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Feuille 1 - Group_P")
 revenue = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Revenue")
 sic = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="SIC")
+tt_return_index = pd.read_excel("Data QARM.xlsx", engine="openpyxl", sheet_name="TT Return Index")
 
 #market_cap = market_cap.merge(sic)
 #print(market_cap)
-=======
-market_cap = market_cap.merge(sic, how="left")
-print(market_cap)
+#market_cap = market_cap.merge(sic, how="left")
+
+market_cap = market_cap.merge(feuille1, how="left", on='ISIN')
+#print(market_cap)
 
 
-# tt_return_index = pd.read_excel("Data QARM.xlsx", engine="openpyxl", sheet_name="TT Return Index")
-#for i in range(1, 149):
-  #print(revenue.iloc[i, 1:277].describe())
+# Question 1 - Seperate Data by Sector : Extrapolate 3 most represented and Analyze Mean, Variance,
+# skewness, kurtosis, minimum, and maximum.
+#-------------------------------------------
 
-#150*278
+#Creat List of GIC sectors so as to find top 3
 
-print(feuille1)
+mylist = feuille1['GICSSector'].tolist()
+#print(mylist)
 
-#market_cap = market_cap.merge(feuille1)
+import collections
+c = collections.Counter(mylist)
+print(c.most_common(3))
 
-# print(y.iloc[::1])
+#We now know top 3 sectors are Industrials, Financials and Consumer Discretionary
+
+#Delete every company that is not part of the 3 sectors
+
+Industrials = market_cap()
+
+
+
+
+
+
+
 
 # Question 2 - KC TRY --------------------
 
-#revenue = revenue.dropna()
+#market_cap = market_cap.dropna()
 #print(market_cap)
 
 
