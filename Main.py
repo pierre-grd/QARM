@@ -13,7 +13,7 @@ market_cap = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Ma
 revenue = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Revenue")
 sic = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="SIC")
 
-market_cap = market_cap.merge(sic)
+market_cap = market_cap.merge(sic, how="left")
 print(market_cap)
 # tt_return_index = pd.read_excel("Data QARM.xlsx", engine="openpyxl", sheet_name="TT Return Index")
 #for i in range(1, 149):
