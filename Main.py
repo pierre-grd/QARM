@@ -23,4 +23,9 @@ print(market_cap)
 
 print(len(revenue.columns))
 
+revenue = revenue.dropna()
+print(revenue)
+
+
+
 
