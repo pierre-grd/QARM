@@ -7,14 +7,17 @@ x = "new number"
 
 # co_2 = pd.read_excel("Data QARM.xlsx", engine="openpyxl", sheet_name="CO2 Emissions")
 
-# market_cap = pd.read_excel("Data QARM.xlsx", engine="openpyxl", sheet_name="Market Cap")
+market_cap = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Market Cap")
 # y = pd.read_excel("Data QARM.xlsx", engine="openpyxl", sheet_name="CO2 Emissions")
 
-revenue = pd.read_excel("Data QARM.xlsx", engine="openpyxl", sheet_name="Revenue")
+revenue = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Revenue")
+sic = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="SIC")
 
+market_cap = market_cap.merge(sic)
+print(market_cap)
 # tt_return_index = pd.read_excel("Data QARM.xlsx", engine="openpyxl", sheet_name="TT Return Index")
-for i in range(1, 149):
-  print(revenue.iloc[i, 1:277].describe())
+#for i in range(1, 149):
+  #print(revenue.iloc[i, 1:277].describe())
 
 #150*278
 
