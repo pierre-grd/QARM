@@ -15,6 +15,11 @@ sic = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="SIC")
 
 #market_cap = market_cap.merge(sic)
 #print(market_cap)
+=======
+market_cap = market_cap.merge(sic, how="left")
+print(market_cap)
+
+
 # tt_return_index = pd.read_excel("Data QARM.xlsx", engine="openpyxl", sheet_name="TT Return Index")
 #for i in range(1, 149):
   #print(revenue.iloc[i, 1:277].describe())
