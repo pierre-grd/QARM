@@ -36,7 +36,7 @@ print(c.most_common(3))
 
 #Delete every company that is not part of the 3 sectors
 
-Industrials = market_cap()
+#Industrials = market_cap()
 
 
 
@@ -47,8 +47,8 @@ Industrials = market_cap()
 
 # Question 2 - KC TRY --------------------
 
-#market_cap = market_cap.dropna()
-#print(market_cap)
+market_cap = market_cap.dropna()
+print(market_cap)
 
 
 
