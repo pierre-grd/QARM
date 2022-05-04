@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-co_2 = pd.read_excel("Data QARM.xlsx", engine="openpyxl", sheet_name="CO2 Emissions")
+#co_2 = pd.read_excel("Data QARM.xlsx", engine="openpyxl", sheet_name="CO2 Emissions")
 market_cap = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Market Cap")
 feuille1 = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Feuille 1 - Group_P")
 revenue = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Revenue")
@@ -15,7 +15,7 @@ tt_return_index = pd.read_excel("Data QARM.xlsx", engine="openpyxl", sheet_name=
 #print(market_cap)
 #market_cap = market_cap.merge(sic, how="left")
 
-market_cap = market_cap.merge(feuille1, how="left", on='ISIN')
+#market_cap = market_cap.merge(feuille1, how="left", on='ISIN')
 #print(market_cap)
 
 
@@ -58,8 +58,8 @@ print(market_cap)
 # Question 3 -----------------------
 
 
-revenue = revenue.dropna()
-print(revenue)
+#revenue = revenue.dropna()
+#print(revenue)
 
 
 
