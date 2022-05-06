@@ -45,19 +45,19 @@ print(c.most_common(3))
 
 
 # Question 2 - KC TRY --------------------
-
 market_cap = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Market Cap").dropna()
 market_cap_nafree = market_cap.iloc[1::,2::]
 
-#DATA CLEANING & Montly scaled
+#DATA CLEANING & Montly scaled :
 
-pct_change = market_cap_nafree.pct_change(axis=1)
-pct_change = pct_change.iloc[:,1:]
-pct_change_mean = np.mean(pct_change, axis=1)
-pct_change = pd.DataFrame.transpose(pct_change)
-pct_change.index = pd.to_datetime(pct_change.index)
-pct_change = pd.DataFrame.resample(pct_change, "M").mean()
-print(pct_change)
+market_cap_nafree = pd.DataFrame.transpose(market_cap_nafree)
+market_cap_nafree.index = pd.to_datetime(market_cap_nafree.index)
+market_cap_nafree = pd.DataFrame.resample(market_cap_nafree, "M").mean()
+pct_change = market_cap_nafree.pct_change(axis=0)
+pct_change = pct_change.iloc[1:,:]
+pct_change_mean = np.mean(pct_change, axis=0)
+
+print(pct_change_mean)
 
 cov_excess = pct_change.cov()
 pct_change = pct_change.T
