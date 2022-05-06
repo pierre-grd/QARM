@@ -47,22 +47,20 @@ print(c.most_common(3))
 # Question 2 - KC TRY --------------------
 
 market_cap = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Market Cap").dropna()
-#market_cap_mean = np.mean(market_cap.loc[1::,1::])
 market_cap_nafree = market_cap.iloc[1::,2::]
 
-#print(market_cap.iloc[1::,2::])
+#DATA CLEANING & Montly scaled
+
 pct_change = market_cap_nafree.pct_change(axis=1)
-print(pct_change)
-pct_change_mean = np.mean(pct_change, axis=1)
-pct_change_mean = pct_change_mean*252
-
-print(pct_change_mean)
-
-#Remove NaN to compute cov matrix :
 pct_change = pct_change.iloc[:,1:]
+pct_change_mean = np.mean(pct_change, axis=1)
+pct_change = pd.DataFrame.transpose(pct_change)
+pct_change.index = pd.to_datetime(pct_change.index)
+pct_change = pd.DataFrame.resample(pct_change, "M").mean()
 print(pct_change)
-pct_change = pct_change.T
+
 cov_excess = pct_change.cov()
+pct_change = pct_change.T
 
 print(cov_excess)
 
@@ -75,7 +73,7 @@ for x in range(500):
     weights = np.random.random(97)
     weights /= np.sum(weights)
     portfolio_returns.append(np.sum(weights*pct_change_mean))
-    portfolio_volatilities.append(np.sqrt(np.dot(weights.T, np.dot(cov_excess*252,weights))))
+    portfolio_volatilities.append(np.sqrt(np.dot(weights.T, np.dot(cov_excess,weights))))
 
 portfolio_returns = np.array(portfolio_returns)
 portfolio_volatilities = np.array(portfolio_volatilities)
@@ -85,10 +83,11 @@ print(portfolio_volatilities)
 
 portfolios_frt = pd.DataFrame({"Return" : portfolio_returns,"Volatility":portfolio_volatilities})
 
-portfolios_frt.plot(x="Volatility", y="Return", kind="scatter", color="red")
+portfolios_frt.plot(x="Volatility", y="Return", kind="scatter", color="blue", s=4)
 plt.xlabel("Expected Volatility")
 plt.ylabel("Expected Return")
 plt.show()
+
 
 
 
