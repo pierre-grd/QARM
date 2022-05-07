@@ -71,7 +71,7 @@ portfolio_returns = []
 portfolio_volatilities = []
 
 #replace 97 by the exact number of companies's stock in the portfolio
-for x in range(10000):
+for x in range(100000):
     weights = np.random.random(97)
     weights /= np.sum(weights)
     portfolio_returns.append(np.sum(pct_change_mean*weights))
