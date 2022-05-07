@@ -2,6 +2,7 @@ import os
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import openpyxl
 
 
 #co_2 = pd.read_excel("Data QARM.xlsx", engine="openpyxl", sheet_name="CO2 Emissions")
@@ -39,12 +40,8 @@ print(c.most_common(3))
 
 
 
+# Question 2 ------------------------------------------------------------------
 
-
-
-
-
-# Question 2 - KC TRY --------------------
 market_cap = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Market Cap").dropna()
 market_cap_nafree = market_cap.iloc[1::,2::]
 
@@ -91,12 +88,8 @@ plt.ylabel("Expected Return")
 plt.show()
 
 
+# Question 3 -------------------------------------------------------------------
 
-
-
-
-
-# Question 3 -----------------------
 prtf_mean = []
 prtf_cov = []
 # Generate x -> Px new samples from the original distribution of mean "pct_change_mean, and variance
@@ -105,7 +98,7 @@ new_P = []
 
 for i in range (1,100):
   print("Portfolio"+str(i)+"/100 Generated")
-  for x in range (275): #replace 6000 by the new period count if it is shifted to monthly returns
+  for x in range (275): #replace 275 by the new period count if it is shifted to daily returns
     new_P.append(np.random.normal(pct_change_mean, np.diagonal(cov_excess)))
   new_P=pd.DataFrame(new_P)
   var = new_P.cov()
@@ -134,19 +127,13 @@ for i in range(1000):
 portfolio_returns = np.array(portfolio_returns)
 portfolio_volatilities = np.array(portfolio_volatilities).squeeze()
 
-#portfolios_frt = pd.DataFrame({"Return" : portfolio_returns,"Volatility":portfolio_volatilities})
 
-#portfolios_frt.plot(x="Volatility", y="Return", kind="scatter", color="red")
 plt.scatter(portfolio_volatilities,portfolio_returns, s=4, color ="blue")
 plt.xlabel("Expected Volatility")
 plt.ylabel("Expected Return")
 plt.show()
 
 
-
-#revenue = revenue.dropna()
-#print(revenue)
-
-
+# Question 4 ---------------------------------------------------------------------
 
 
