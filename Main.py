@@ -60,7 +60,7 @@ pct_change_mean = np.mean(pct_change, axis=0)
 
 stock = market_cap_nafree/market_cap_nafree.shift(1)
 stock = stock.iloc[1:,:]
-stock = stock      
+stock = stock
 print(stock)
 cov_excess = stock.cov()
 pct_change_mean = np.mean(stock)
