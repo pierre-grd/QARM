@@ -97,6 +97,51 @@ plt.show()
 
 
 # Question 3 -----------------------
+prtf_mean = []
+prtf_cov = []
+# Generate x -> Px new samples from the original distribution of mean "pct_change_mean, and variance
+# the diagonal of "cov_excess", and compute mean return and cov matrix of the new sample
+new_P = []
+
+for i in range (1,100):
+  print("Portfolio"+str(i)+"/100 Generated")
+  for x in range (275): #replace 6000 by the new period count if it is shifted to monthly returns
+    new_P.append(np.random.normal(pct_change_mean, np.diagonal(cov_excess)))
+  new_P=pd.DataFrame(new_P)
+  var = new_P.cov()
+  mean = new_P.mean(axis=0)
+  prtf_mean.append(mean)
+  prtf_cov.append(var)
+  new_P = []
+
+#We now have 100 sample of normaly distributed returns
+# from the original data filled into prtf_mean and prtf_cov
+
+prtf_mean = np.transpose(prtf_mean)
+prtf_mean = pd.DataFrame(prtf_mean)
+
+portfolio_returns = []
+portfolio_volatilities = []
+
+for i in range(1000):
+ for x in range(99):
+    weights = np.random.random(97)
+    weights /= np.sum(weights)
+    portfolio_returns.append(np.sum(prtf_mean[x]*weights))
+    portfolio_volatilities.append(np.sqrt(np.dot(weights.T, np.dot(prtf_cov[x],weights))))
+
+
+portfolio_returns = np.array(portfolio_returns)
+portfolio_volatilities = np.array(portfolio_volatilities).squeeze()
+
+#portfolios_frt = pd.DataFrame({"Return" : portfolio_returns,"Volatility":portfolio_volatilities})
+
+#portfolios_frt.plot(x="Volatility", y="Return", kind="scatter", color="red")
+plt.scatter(portfolio_volatilities,portfolio_returns, s=4, color ="blue")
+plt.xlabel("Expected Volatility")
+plt.ylabel("Expected Return")
+plt.show()
+
 
 
 #revenue = revenue.dropna()
