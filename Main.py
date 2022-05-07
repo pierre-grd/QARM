@@ -57,12 +57,12 @@ pct_change = market_cap_nafree.pct_change(axis=0)
 pct_change = pct_change.iloc[1:,:]
 pct_change_mean = np.mean(pct_change, axis=0)
 
-print(pct_change_mean)
 
+stock = market_cap_nafree/market_cap_nafree.shift(1)
+print(stock)
 cov_excess = pct_change.cov()
 pct_change = pct_change.T
 
-print(cov_excess)
 
 #Create a list of randomized weighting vectors :
 portfolio_returns = []
@@ -72,7 +72,7 @@ portfolio_volatilities = []
 for x in range(500):
     weights = np.random.random(97)
     weights /= np.sum(weights)
-    portfolio_returns.append(np.sum(weights*pct_change_mean))
+    portfolio_returns.append(np.sum(pct_change_mean*weights))
     portfolio_volatilities.append(np.sqrt(np.dot(weights.T, np.dot(cov_excess,weights))))
 
 portfolio_returns = np.array(portfolio_returns)
