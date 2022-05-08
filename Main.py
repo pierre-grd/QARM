@@ -57,7 +57,6 @@ pct_change_mean = np.mean(pct_change, axis=0)
 
 stock = market_cap_nafree/market_cap_nafree.shift(1)
 stock = stock.iloc[1:,:]
-stock = stock
 print(stock)
 cov_excess = stock.cov()
 pct_change_mean = np.mean(stock)
@@ -68,7 +67,7 @@ portfolio_returns = []
 portfolio_volatilities = []
 weights_vec = []
 #replace 97 by the exact number of companies's stock in the portfolio
-for x in range(1000):
+for x in range(10000):
     weights = np.random.random(97)
     weights /= np.sum(weights)
     portfolio_returns.append(np.sum(pct_change_mean*weights))
@@ -138,9 +137,13 @@ min = np.min(portfolio_volatilities)
 index_min = np.argmin(portfolio_volatilities)
 print(weights_vec[index_min])
 print("The MVP has a volatility of " +str(min))
+print("Annualized average return is : "+str((portfolio_returns[index_min]-1)*12))
 
-print("annualized average return is : "+str((portfolio_returns[index_min]-1)*12))
+stock = pd.DataFrame.resample(stock, "Y")
+stock = stock.mean()
+stock = pd.DataFrame.mean(stock, axis=1)
+print(weights_vec)
+print(stock)
 
-
-
-
+print("The minimum annual return is : "+str(np.min(weights_vec[index_min]*stock)))
+print("The maximum annual return is : "+str(np.max(weights_vec[index_min]*stock)))
