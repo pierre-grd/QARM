@@ -135,17 +135,17 @@ plt.show()
 
 min = np.min(portfolio_volatilities)
 index_min = np.argmin(portfolio_volatilities)
-print(weights_vec[index_min])
-print("The MVP has a volatility of " +str(min))
-print("Annualized average return is : "+str((portfolio_returns[index_min]-1)*12))
 
-stock = pd.DataFrame.resample(stock, "Y")
-stock = stock.mean()
-stock = stock*weights_vec[index_min]*12
+#stock = pd.DataFrame.resample(stock,"Y")
+#stock = stock.mean()
+
+print("The MVP has an annualized volatility of " +str(min*12))
+print("Annualized average return is : "+str((np.mean(portfolio_returns[index_min])-1)*12))
+
+stock = weights_vec[index_min]*stock
 stock = pd.DataFrame.mean(stock, axis=1)
 
-print(weights_vec[index_min])
-print(stock)
+print("The minimum annual return is : "+str(pd.DataFrame.min(stock)*12))
+print("The maximum annual return is : "+str(pd.DataFrame.max(stock)*12))
 
-print("The minimum annual return is : "+str(pd.DataFrame.min(stock)))
-print("The maximum annual return is : "+str(pd.DataFrame.max(stock)))
+
