@@ -44,7 +44,7 @@ print(c.most_common(3))
 
 
 
-# Question 2 - KC TRY --------------------
+# Question 2  --------------------
 
 market_cap = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Market Cap").dropna()
 #market_cap_mean = np.mean(market_cap.loc[1::,1::])
