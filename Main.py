@@ -57,17 +57,38 @@ pct_change_mean = np.mean(pct_change, axis=0)
 
 stock = market_cap_nafree/market_cap_nafree.shift(1)
 stock = stock.iloc[1:,:]
-print(stock)
 cov_excess = stock.cov()
 pct_change_mean = np.mean(stock)
-
-
 #Create a list of randomized weighting vectors :
+
 portfolio_returns = []
 portfolio_volatilities = []
 weights_vec = []
 #replace 97 by the exact number of companies's stock in the portfolio
-for x in range(10000):
+"""
+def MVPs(lambd, stocks, cov):
+    cov_in = np.linalg.inv(cov)
+    stock_mu = stocks.shape[0]
+    e = np.ones((stock_mu, 1))
+    A = (cov_in @ e)/(e.T @ cov_in @ e)
+    B = (1/lambd) * cov_in
+    C = ((e.T @ cov_in @ stocks)/(e.T @ cov_in @ e))*e
+    C = pd.DataFrame(C).squeeze()
+    D = stocks - C
+    alpha = A + B@C
+    return alpha
+
+for i in range (2,700):
+    weights = MVPs(i/100, pct_change_mean,cov_excess)
+    weights /= np.sum(weights)
+    weights = weights[0]
+    retur_n = weights*pct_change_mean
+    volat = np.sqrt(weights.T @cov_excess@weights)
+    portfolio_returns.append(retur_n)
+    portfolio_volatilities.append(volat)
+
+"""
+for x in range(100000):
     weights = np.random.random(97)
     weights /= np.sum(weights)
     portfolio_returns.append(np.sum(pct_change_mean*weights))
@@ -79,7 +100,6 @@ portfolio_volatilities = np.array(portfolio_volatilities)
 weights_vec = np.array(weights_vec)
 
 portfolios_frt = pd.DataFrame({"Return" : portfolio_returns,"Volatility":portfolio_volatilities})
-
 portfolios_frt.plot(x="Volatility", y="Return", kind="scatter", color="blue", s=4)
 plt.xlabel("Expected Volatility")
 plt.ylabel("Expected Return")
