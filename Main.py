@@ -141,9 +141,11 @@ print("Annualized average return is : "+str((portfolio_returns[index_min]-1)*12)
 
 stock = pd.DataFrame.resample(stock, "Y")
 stock = stock.mean()
+stock = stock*weights_vec[index_min]*12
 stock = pd.DataFrame.mean(stock, axis=1)
-print(weights_vec)
+
+print(weights_vec[index_min])
 print(stock)
 
-print("The minimum annual return is : "+str(np.min(weights_vec[index_min]*stock)))
-print("The maximum annual return is : "+str(np.max(weights_vec[index_min]*stock)))
+print("The minimum annual return is : "+str(pd.DataFrame.min(stock)))
+print("The maximum annual return is : "+str(pd.DataFrame.max(stock)))
