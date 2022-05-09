@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import openpyxl
+import scipy.stats as sp
 
 """
 #co_2 = pd.read_excel("Data QARM.xlsx", engine="openpyxl", sheet_name="CO2 Emissions")
@@ -54,7 +55,6 @@ pct_change = market_cap_nafree.pct_change(axis=0)
 pct_change = pct_change.iloc[1:,:]
 pct_change_mean = np.mean(pct_change, axis=0)
 
-
 stock = market_cap_nafree/market_cap_nafree.shift(1)
 stock = stock.iloc[1:,:]
 cov_excess = stock.cov()
@@ -88,7 +88,7 @@ for i in range (2,700):
     portfolio_volatilities.append(volat)
 
 """
-for x in range(100000):
+for x in range(30000):
     weights = np.random.random(97)
     weights /= np.sum(weights)
     portfolio_returns.append(np.sum(pct_change_mean*weights))
@@ -101,8 +101,8 @@ weights_vec = np.array(weights_vec)
 
 portfolios_frt = pd.DataFrame({"Return" : portfolio_returns,"Volatility":portfolio_volatilities})
 portfolios_frt.plot(x="Volatility", y="Return", kind="scatter", color="blue", s=4)
-plt.xlabel("Expected Volatility")
-plt.ylabel("Expected Return")
+plt.xlabel("Monthly Expected Volatility")
+plt.ylabel("Monthly Expected Return")
 plt.show()
 
 """
@@ -156,16 +156,68 @@ plt.show()
 min = np.min(portfolio_volatilities)
 index_min = np.argmin(portfolio_volatilities)
 
-#stock = pd.DataFrame.resample(stock,"Y")
-#stock = stock.mean()
 
 print("The MVP has an annualized volatility of " +str(min*12))
-print("Annualized average return is : "+str((np.mean(portfolio_returns[index_min])-1)*12))
+print("MVP Annualized average return is : "+str((np.mean(portfolio_returns[index_min])-1)*12))
 
-stock = weights_vec[index_min]*stock
-stock = pd.DataFrame.mean(stock, axis=1)
+stock_for_mv = weights_vec[index_min] * stock
 
-print("The minimum annual return is : "+str(pd.DataFrame.min(stock)*12))
-print("The maximum annual return is : "+str(pd.DataFrame.max(stock)*12))
+stock_for_mv = pd.DataFrame.mean(stock_for_mv, axis=1)
+print("The minimum annual return of MVP is : "+str(pd.DataFrame.min(stock_for_mv)*12))
+print("The maximum annual return of MVP is : "+str(pd.DataFrame.max(stock_for_mv)*12))
 
 
+def var_gaussian(r, level=10, modified=True):
+    """
+    Returns the Parametric Gausian VaR of a Series or DataFrame
+    If "modified" is True, then the modified VaR is returned,
+    using the Cornish-Fisher modification
+    """
+    # compute the Z score assuming it was Gaussian
+    z = sp.norm.ppf(level/100)
+    if modified:
+        # modify the Z score based on observed skewness and kurtosis
+        s = sp.skew(r)
+        k = sp.kurtosis(r)
+        z = (z +
+                (z**2 - 1)*s/6 +
+                (z**3 -3*z)*(k-3)/24 -
+                (2*z**3 - 5*z)*(s**2)/36
+            )
+    return -(r.mean() + z*np.std(r))
+
+def ES(r,cov, alpha = 1):
+    CVaR_n = alpha ** -1 * sp.norm.pdf(sp.norm.ppf(alpha)) *cov  - r
+    return CVaR_n
+
+print("The VaR of MVP is "+str(var_gaussian(stock_for_mv)))
+print("The expected shortfall of MVP is "+str(ES(stock_for_mv.mean(),
+                                                 cov=portfolio_volatilities[index_min])))
+
+
+equal_weight = np.full(97, 1/97)
+EW_returns = pct_change_mean*equal_weight
+print("The equally weighted portfolio have an annual volatility of "+
+      str(np.sqrt(np.dot(equal_weight.T, np.dot(cov_excess,equal_weight)))*12))
+print("the EW portfolio have annual return of "+str((((np.mean(EW_returns))-1))*12))
+print("EW portfolio MAX ANN Return : "+str(((np.max(EW_returns))-1)*12))
+print("EW portfolio MIN ANN Return : "+str(((np.min(EW_returns))-1)*12))
+print("EW portfolio VaR : "+str(var_gaussian(EW_returns)))
+print("EW portfolio ES : "+str(ES(EW_returns,np.sqrt(np.dot(equal_weight.T, np.dot(cov_excess,equal_weight))))))
+
+
+#Value weighted portfolio base on average market cap on considered period:
+
+VW_weight = market_cap_nafree.mean()
+VW_weight /= sum(VW_weight)
+VW_returns = VW_weight * stock
+
+
+print(VW_returns)
+print("The Value weighted portfolio have an annual volatility of "+
+      str(np.sqrt(np.dot(VW_weight.T, np.dot(cov_excess,VW_weight)))*12))
+print("the VW portfolio have annual return of "+str((((np.mean(VW_returns))-1))*12))
+print("VW portfolio MAX ANN Return : "+str(((np.max(VW_returns))-1)*12))
+print("VW portfolio MIN ANN Return : "+str(((np.min(VW_returns))-1)*12))
+print("VW portfolio VaR : "+str(var_gaussian(VW_returns)))
+print("VW portfolio ES : "+str(ES(VW_returns,np.sqrt(np.dot(VW_weight.T, np.dot(cov_excess,VW_weight))))))
