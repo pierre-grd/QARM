@@ -56,14 +56,17 @@ market_cap_nafree = market_cap.iloc[1::,2::]
 market_cap_nafree = pd.DataFrame.transpose(market_cap_nafree)
 market_cap_nafree.index = pd.to_datetime(market_cap_nafree.index)
 market_cap_nafree = pd.DataFrame.resample(market_cap_nafree, "M").mean()
-pct_change = market_cap_nafree.pct_change(axis=0)
-pct_change = pct_change.iloc[1:,:]
-pct_change_mean = np.mean(pct_change, axis=0)
+#pct_change = market_cap_nafree.pct_change(axis=0)
+#pct_change = pct_change.iloc[1:,:]
+#pct_change_mean = np.mean(pct_change, axis=0)
+print(market_cap_nafree)
 
 stock = market_cap_nafree/market_cap_nafree.shift(1)
 stock = stock.iloc[1:,:]
 cov_excess = stock.cov()
 pct_change_mean = np.mean(stock)
+print(stock)
+print(pct_change_mean)
 #Create a list of randomized weighting vectors :
 
 portfolio_returns = []
@@ -93,7 +96,7 @@ for i in range (2,700):
     portfolio_volatilities.append(volat)
 
 """
-for x in range(100000):
+for x in range(10000):
     weights = np.random.random(97)
     weights /= np.sum(weights)
     portfolio_returns.append(np.sum(pct_change_mean*weights))
@@ -161,7 +164,7 @@ plt.show()
 #-----------------------------------------------------------------------------------------------------------------------
 # Question 4 -----------------------------------------------------------------------------------------------------------
 #-----------------------------------------------------------------------------------------------------------------------
-
+"""
 min = np.min(portfolio_volatilities)
 index_min = np.argmin(portfolio_volatilities)
 
@@ -177,11 +180,6 @@ print("GMV portfolio MAX ANN Return : "+str(pd.DataFrame.max(stock_for_mv)*12))
 
 
 def var_gaussian(r, level=10, modified=True):
-    """
-    Returns the Parametric Gausian VaR of a Series or DataFrame
-    If "modified" is True, then the modified VaR is returned,
-    using the Cornish-Fisher modification
-    """
     # compute the Z score assuming it was Gaussian
     z = sp.norm.ppf(level/100)
     if modified:
@@ -215,7 +213,7 @@ print("EW portfolio VaR : "+str(var_gaussian(EW_returns)))
 print("EW portfolio ES : "+str(ES(EW_returns.mean(),np.sqrt(np.dot(equal_weight.T, np.dot(cov_excess,equal_weight))))))
 
 
-#Value weighted portfolio base on average market cap on considered period:
+#Value weighted portfolio base on average monthly market cap on considered period 1999-2021:
 
 VW_weight = market_cap_nafree.mean()
 VW_weight /= sum(VW_weight)
@@ -229,7 +227,8 @@ print("VW portfolio MAX ANN Return : "+str(((np.max(VW_returns)))*12))
 print("VW portfolio MIN ANN Return : "+str(((np.min(VW_returns)))*12))
 print("VW portfolio VaR : "+str(var_gaussian(VW_returns)))
 print("VW portfolio ES : "+str(ES(VW_returns.mean(),np.sqrt(np.dot(VW_weight.T, np.dot(cov_excess,VW_weight))))))
-
+"""
 #---------------------------------------------------------------------------------------------------------------------
 # QUESTION 5 ---------------------------------------------------------------------------------------------------------
 #---------------------------------------------------------------------------------------------------------------------
+
