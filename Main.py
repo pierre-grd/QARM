@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 import openpyxl
 import scipy.stats as sp
 
+
+
 """
 #co_2 = pd.read_excel("Data QARM.xlsx", engine="openpyxl", sheet_name="CO2 Emissions")
 feuille1 = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Feuille 1 - Group_P")
@@ -19,10 +21,12 @@ tt_return_index = pd.read_excel("Data QARM.xlsx", engine="openpyxl", sheet_name=
 #market_cap = market_cap.merge(feuille1, how="left", on='ISIN')
 #print(market_cap)
 
+#----------------------------------------------------------------------------------------------------------------------
+# Question 1 - --------------------------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------------------------------------
 
-# Question 1 - Seperate Data by Sector : Extrapolate 3 most represented and Analyze Mean, Variance,
+Seperate Data by Sector : Extrapolate 3 most represented and Analyze Mean, Variance,
 # skewness, kurtosis, minimum, and maximum.
-#-------------------------------------------
 
 #Creat List of GIC sectors so as to find top 3
 
@@ -40,8 +44,9 @@ print(c.most_common(3))
 #Industrials = market_cap()
 
 """
-
-# Question 2 ------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------------------------------------
+# Question 2 -----------------------------------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------------------------------------
 
 market_cap = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Market Cap").dropna()
 market_cap_nafree = market_cap.iloc[1::,2::]
@@ -106,7 +111,10 @@ plt.ylabel("Monthly Expected Return")
 plt.show()
 
 """
-# Question 3 -------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------------------------------------
+# Question 3 -----------------------------------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------------------------------------
+
 prtf_mean = []
 prtf_cov = []
 # Generate x -> Px new samples from the original distribution of mean "pct_change_mean, and variance
@@ -150,21 +158,22 @@ plt.xlabel("Expected Volatility")
 plt.ylabel("Expected Return")
 plt.show()
 """
-
-# Question 4 ---------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------------------------------------
+# Question 4 -----------------------------------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------------------------------------
 
 min = np.min(portfolio_volatilities)
 index_min = np.argmin(portfolio_volatilities)
 
 
-print("The MVP has an annualized volatility of " +str(min*12))
-print("MVP Annualized average return is : "+str((np.mean(portfolio_returns[index_min])-1)*12))
+print("The GMVP has an annualized volatility of " +str(min*12))
+print("GMVP Annualized average return is : "+str((np.mean(portfolio_returns[index_min])-1)*12))
 
 stock_for_mv = weights_vec[index_min] * stock
 
 stock_for_mv = pd.DataFrame.mean(stock_for_mv, axis=1)
-print("The minimum annual return of MVP is : "+str(pd.DataFrame.min(stock_for_mv)*12))
-print("The maximum annual return of MVP is : "+str(pd.DataFrame.max(stock_for_mv)*12))
+print("GMV portfolio MIN ANN Return: "+str(pd.DataFrame.min(stock_for_mv)*12))
+print("GMV portfolio MAX ANN Return : "+str(pd.DataFrame.max(stock_for_mv)*12))
 
 
 def var_gaussian(r, level=10, modified=True):
@@ -190,8 +199,8 @@ def ES(r,cov, alpha = 1):
     CVaR_n = alpha ** -1 * sp.norm.pdf(sp.norm.ppf(alpha)) *cov  - r
     return CVaR_n
 
-print("The VaR of MVP is "+str(var_gaussian(stock_for_mv)))
-print("The expected shortfall of MVP is "+str(ES(stock_for_mv.mean(),
+print("MVP portfolio VaR "+str(var_gaussian(stock_for_mv)))
+print("MVP portfolio ES "+str(ES(stock_for_mv.mean(),
                                                  cov=portfolio_volatilities[index_min])))
 
 
@@ -199,11 +208,11 @@ equal_weight = np.full(97, 1/97)
 EW_returns = np.mean(equal_weight*stock, axis=1)
 print("The equally weighted portfolio have an annual volatility of "+
       str(np.sqrt(np.dot(equal_weight.T, np.dot(cov_excess,equal_weight)))*12))
-print("EW portfolio average anual return : "+str((((np.mean(EW_returns))))*12))
+print("EW portfolio average annual return : "+str((((np.mean(EW_returns))))*12))
 print("EW portfolio MAX ANN Return : "+str(((np.max(EW_returns)))*12))
 print("EW portfolio MIN ANN Return : "+str(((np.min(EW_returns)))*12))
 print("EW portfolio VaR : "+str(var_gaussian(EW_returns)))
-print("EW portfolio ES : "+str(ES(EW_returns,np.sqrt(np.dot(equal_weight.T, np.dot(cov_excess,equal_weight))))))
+print("EW portfolio ES : "+str(ES(EW_returns.mean(),np.sqrt(np.dot(equal_weight.T, np.dot(cov_excess,equal_weight))))))
 
 
 #Value weighted portfolio base on average market cap on considered period:
@@ -213,10 +222,14 @@ VW_weight /= sum(VW_weight)
 VW_returns = np.mean(VW_weight * stock, axis=1)
 
 
-print("The Value weighted portfolio have an annual volatility of "+
+print("The value weighted portfolio have an annual volatility of "+
       str(np.sqrt(np.dot(VW_weight.T, np.dot(cov_excess,VW_weight)))*12))
-print("the VW portfolio have annual return of "+str((((np.mean(VW_returns))))*12))
+print("VW portfolio annual average return of "+str((((np.mean(VW_returns))))*12))
 print("VW portfolio MAX ANN Return : "+str(((np.max(VW_returns)))*12))
 print("VW portfolio MIN ANN Return : "+str(((np.min(VW_returns)))*12))
 print("VW portfolio VaR : "+str(var_gaussian(VW_returns)))
-print("VW portfolio ES : "+str(ES(VW_returns,np.sqrt(np.dot(VW_weight.T, np.dot(cov_excess,VW_weight))))))
+print("VW portfolio ES : "+str(ES(VW_returns.mean(),np.sqrt(np.dot(VW_weight.T, np.dot(cov_excess,VW_weight))))))
+
+#---------------------------------------------------------------------------------------------------------------------
+# QUESTION 5 ---------------------------------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------------------------------------------
