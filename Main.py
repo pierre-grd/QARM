@@ -88,7 +88,7 @@ for i in range (2,700):
     portfolio_volatilities.append(volat)
 
 """
-for x in range(30000):
+for x in range(100000):
     weights = np.random.random(97)
     weights /= np.sum(weights)
     portfolio_returns.append(np.sum(pct_change_mean*weights))
@@ -196,12 +196,12 @@ print("The expected shortfall of MVP is "+str(ES(stock_for_mv.mean(),
 
 
 equal_weight = np.full(97, 1/97)
-EW_returns = pct_change_mean*equal_weight
+EW_returns = np.mean(equal_weight*stock, axis=1)
 print("The equally weighted portfolio have an annual volatility of "+
       str(np.sqrt(np.dot(equal_weight.T, np.dot(cov_excess,equal_weight)))*12))
-print("the EW portfolio have annual return of "+str((((np.mean(EW_returns))-1))*12))
-print("EW portfolio MAX ANN Return : "+str(((np.max(EW_returns))-1)*12))
-print("EW portfolio MIN ANN Return : "+str(((np.min(EW_returns))-1)*12))
+print("EW portfolio average anual return : "+str((((np.mean(EW_returns))))*12))
+print("EW portfolio MAX ANN Return : "+str(((np.max(EW_returns)))*12))
+print("EW portfolio MIN ANN Return : "+str(((np.min(EW_returns)))*12))
 print("EW portfolio VaR : "+str(var_gaussian(EW_returns)))
 print("EW portfolio ES : "+str(ES(EW_returns,np.sqrt(np.dot(equal_weight.T, np.dot(cov_excess,equal_weight))))))
 
@@ -210,14 +210,13 @@ print("EW portfolio ES : "+str(ES(EW_returns,np.sqrt(np.dot(equal_weight.T, np.d
 
 VW_weight = market_cap_nafree.mean()
 VW_weight /= sum(VW_weight)
-VW_returns = VW_weight * stock
+VW_returns = np.mean(VW_weight * stock, axis=1)
 
 
-print(VW_returns)
 print("The Value weighted portfolio have an annual volatility of "+
       str(np.sqrt(np.dot(VW_weight.T, np.dot(cov_excess,VW_weight)))*12))
-print("the VW portfolio have annual return of "+str((((np.mean(VW_returns))-1))*12))
-print("VW portfolio MAX ANN Return : "+str(((np.max(VW_returns))-1)*12))
-print("VW portfolio MIN ANN Return : "+str(((np.min(VW_returns))-1)*12))
+print("the VW portfolio have annual return of "+str((((np.mean(VW_returns))))*12))
+print("VW portfolio MAX ANN Return : "+str(((np.max(VW_returns)))*12))
+print("VW portfolio MIN ANN Return : "+str(((np.min(VW_returns)))*12))
 print("VW portfolio VaR : "+str(var_gaussian(VW_returns)))
 print("VW portfolio ES : "+str(ES(VW_returns,np.sqrt(np.dot(VW_weight.T, np.dot(cov_excess,VW_weight))))))
