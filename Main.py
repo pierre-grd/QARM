@@ -235,7 +235,9 @@ market_cap_nafree = market_cap.iloc[1::, 2::]
 market_cap_nafree = pd.DataFrame.transpose(market_cap_nafree)
 market_cap_nafree.index = pd.to_datetime(market_cap_nafree.index)
 market_cap_nafree = pd.DataFrame.resample(market_cap_nafree, "M").mean()
+
 market_cap_nafree = market_cap_nafree.iloc[:72, :]
+
 # pct_change = market_cap_nafree.pct_change(axis=0)
 # pct_change = pct_change.iloc[1:,:]
 # pct_change_mean = np.mean(pct_change, axis=0)
@@ -249,15 +251,15 @@ pct_change_mean = np.mean(stock)
 
 
 
-def return_min_var_alpha_POSNEG(mu, cov, gen=10000):
+def return_min_var_alpha_POSNEG(mu, cov, gen=30000, sharesnumber = 97):
     portfolio_returns = []
     portfolio_volatilities = []
     weights_vec = []
     for x in range(gen):
-        weights = np.random.normal(0,1,97)
+        weights = np.random.uniform(-1, 1, sharesnumber)
         weights /= np.sum(weights)
-        portfolio_returns.append(np.sum(pct_change_mean * weights))
-        portfolio_volatilities.append(np.sqrt(np.dot(weights.T, np.dot(cov_excess, weights))))
+        portfolio_returns.append(np.sum(mu * weights))
+        portfolio_volatilities.append(np.sqrt(np.dot(weights.T, np.dot(cov, weights))))
         weights_vec.append(weights)
     portfolio_returns = np.array(portfolio_returns)
     portfolio_volatilities = np.array(portfolio_volatilities)
@@ -268,22 +270,22 @@ def return_min_var_alpha_POSNEG(mu, cov, gen=10000):
     return alpha
 
 
-print(return_min_var_alpha(pct_change_mean, cov_excess))
+print(return_min_var_alpha_POSNEG(pct_change_mean, cov_excess))
 
 #----------------------------------------------------------------------------------------------------------------------
 #QUESTION 6------------------------------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------------------------------------
 """
 #the function under is written for positive weights only,
-def return_min_var_alpha_POS(mu, cov, gen=10000):
+def return_min_var_alpha_POSNEG(mu, cov, gen=30000, sharesnumber = 97):
     portfolio_returns = []
     portfolio_volatilities = []
     weights_vec = []
     for x in range(gen):
-        weights = np.random.random(97)
+        weights = np.random.uniform(0, 1, sharesnumber)
         weights /= np.sum(weights)
-        portfolio_returns.append(np.sum(pct_change_mean * weights))
-        portfolio_volatilities.append(np.sqrt(np.dot(weights.T, np.dot(cov_excess, weights))))
+        portfolio_returns.append(np.sum(mu * weights))
+        portfolio_volatilities.append(np.sqrt(np.dot(weights.T, np.dot(cov, weights))))
         weights_vec.append(weights)
     portfolio_returns = np.array(portfolio_returns)
     portfolio_volatilities = np.array(portfolio_volatilities)
