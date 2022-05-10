@@ -235,7 +235,6 @@ market_cap_nafree = market_cap.iloc[1::, 2::]
 market_cap_nafree = pd.DataFrame.transpose(market_cap_nafree)
 market_cap_nafree.index = pd.to_datetime(market_cap_nafree.index)
 market_cap_nafree = pd.DataFrame.resample(market_cap_nafree, "M").mean()
-
 market_cap_nafree = market_cap_nafree.iloc[:72, :]
 
 # pct_change = market_cap_nafree.pct_change(axis=0)
@@ -250,8 +249,7 @@ pct_change_mean = np.mean(stock)
 # MU and COV on first 6 months
 
 
-
-def return_min_var_alpha_POSNEG(mu, cov, gen=30000, sharesnumber = 97):
+def return_min_var_alpha_POSNEG(mu, cov, gen=1000, sharesnumber = 97):
     portfolio_returns = []
     portfolio_volatilities = []
     weights_vec = []
@@ -269,8 +267,20 @@ def return_min_var_alpha_POSNEG(mu, cov, gen=30000, sharesnumber = 97):
     alpha = weights_vec[index_min]
     return alpha
 
+saved_returns = []
 
-print(return_min_var_alpha_POSNEG(pct_change_mean, cov_excess))
+for i in range (203):
+    market_cap_sixyear = market_cap_nafree.iloc[i:i+72,:]
+    stock = market_cap_sixyear / market_cap_sixyear.shift(1)
+    stock = stock.iloc[1:, :]
+    cov_excess = stock.cov()
+    pct_change_mean = np.mean(stock)
+    alpha = return_min_var_alpha_POSNEG(pct_change_mean, cov_excess)
+    saved_returns.append(np.sum(pct_change_mean*alpha))
+
+
+
+print(saved_returns)
 
 #----------------------------------------------------------------------------------------------------------------------
 #QUESTION 6------------------------------------------------------------------------------------------------------------
