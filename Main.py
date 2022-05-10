@@ -4,54 +4,156 @@ import numpy as np
 import matplotlib.pyplot as plt
 import openpyxl
 
-"""
-#co_2 = pd.read_excel("Data QARM.xlsx", engine="openpyxl", sheet_name="CO2 Emissions")
+
+co_2 = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="CO2 Emissions")
+market_cap = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Market Cap").dropna()
 feuille1 = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Feuille 1 - Group_P")
 revenue = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Revenue")
 sic = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="SIC")
-tt_return_index = pd.read_excel("Data QARM.xlsx", engine="openpyxl", sheet_name="TT Return Index")
+tt_return_index = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="TT Return Index")
 
 #market_cap = market_cap.merge(sic)
-#print(market_cap)
 #market_cap = market_cap.merge(sic, how="left")
 
-#market_cap = market_cap.merge(feuille1, how="left", on='ISIN')
-#print(market_cap)
+market_cap_sectors = market_cap.merge(feuille1, how="left", on='ISIN')
+
+
 
 
 # Question 1 - Seperate Data by Sector : Extrapolate 3 most represented and Analyze Mean, Variance,
 # skewness, kurtosis, minimum, and maximum.
-#-------------------------------------------
+# -------------------------------------------
 
-#Creat List of GIC sectors so as to find top 3
+# Creat List of GIC sectors so as to find top 3
 
 mylist = feuille1['GICSSector'].tolist()
-#print(mylist)
+
 
 import collections
 c = collections.Counter(mylist)
-print(c.most_common(3))
 
-#We now know top 3 sectors are Industrials, Financials and Consumer Discretionary
 
-#Delete every company that is not part of the 3 sectors
+# We now know top 3 sectors are Industrials, Financials and Consumer Discretionary
 
-#Industrials = market_cap()
+# Delete every company that is not part of the 3 sectors
 
-<<<<<<< HEAD
-#market_cap1 = market_cap.loc[market_cap['GICSSector'].str.contains('Industrials')]
-#market_cap2 = market_cap.loc[market_cap['GICSSector'].str.contains('Financials')]
-#market_cap3 = market_cap.loc[market_cap['GICSSector'].str.contains('Consumer Discretionary')]
-#three_sectors = [market_cap1, market_cap2, market_cap3]
-#aggr_sectors = pd.concat(three_sectors)
+# Industrials = market_cap()
 
-=======
+"""
+market_cap1 = market_cap_sectors.loc[market_cap_sectors['GICSSector'].str.contains('Industrials')]
+market_cap2 = market_cap_sectors.loc[market_cap_sectors['GICSSector'].str.contains('Financials')]
+market_cap3 = market_cap_sectors.loc[market_cap_sectors['GICSSector'].str.contains('Consumer Discretionary')]
+three_sectors = [market_cap1, market_cap2, market_cap3]
+aggr_sectors = pd.concat(three_sectors)
+
+
+market_cap1 = market_cap1.drop(['GICSSector', 'Country', 'Region', 'CommonName'], axis=1)
+market_cap2 = market_cap2.drop(['GICSSector', 'Country', 'Region', 'CommonName'], axis=1)
+market_cap3 = market_cap3.drop(['GICSSector', 'Country', 'Region', 'CommonName'], axis=1)
+
+market_cap1 = market_cap1.iloc[::,1::]
+market_cap2 = market_cap2.iloc[::,1::]
+market_cap3 = market_cap3.iloc[::,1::]
+
+market_cap1 = market_cap1.T
+market_cap2 = market_cap2.T
+market_cap3 = market_cap3.T
+
+market_cap1.index = pd.to_datetime(market_cap1.index)
+market_cap2.index = pd.to_datetime(market_cap2.index)
+market_cap3.index = pd.to_datetime(market_cap3.index)
+
+# Put into yearly prices
+
+market_cap1 = pd.DataFrame.resample(market_cap1,"Y" )
+market_cap2 = pd.DataFrame.resample(market_cap2,"Y" )
+market_cap3 = pd.DataFrame.resample(market_cap3,"Y" )
+
+market_cap1 = market_cap1.mean()
+market_cap2 = market_cap2.mean()
+market_cap3 = market_cap3.mean()
+
+# Sum the columns per year
+
+market_cap1_total = market_cap1.sum(axis=1)
+market_cap2_total = market_cap2.sum(axis=1)
+market_cap3_total = market_cap3.sum(axis=1)
+
+# Calculate total average returns per year per sector
+
+market_cap1_avgreturn = market_cap1_total / market_cap1_total.shift(1)
+market_cap2_avgreturn = market_cap2_total / market_cap2_total.shift(1)
+market_cap3_avgreturn = market_cap3_total / market_cap3_total.shift(1)
+
+# Calculate total average all stocks returns
+
+market_cap = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Market Cap").dropna()
+market_cap_nafree = market_cap.iloc[1::,2::]
+market_cap_nafree = market_cap_nafree.T
+market_cap_nafree.index = pd.to_datetime(market_cap_nafree.index)
+market_cap_nafree = pd.DataFrame.resample(market_cap_nafree, "Y").mean()
+market_cap_nafree = market_cap_nafree.sum(axis=1)
+market_cap_nafree_avgreturn = market_cap_nafree / market_cap_nafree.shift(1)
+
+
+# Mean annualized
+
+market_cap1_avgreturn_mean = market_cap1_avgreturn.mean()
+market_cap2_avgreturn_mean = market_cap2_avgreturn.mean()
+market_cap3_avgreturn_mean = market_cap3_avgreturn.mean()
+markret_cap_nafree_avgreturn_mean = market_cap_nafree_avgreturn.mean()
+
+
+# Standard deviation annualized
+
+market_cap1_avgreturn_std = market_cap1_avgreturn.std()
+market_cap2_avgreturn_std = market_cap2_avgreturn.std()
+market_cap3_avgreturn_std = market_cap3_avgreturn.std()
+markret_cap_nafree_avgreturn_std = market_cap_nafree_avgreturn.std()
+
+
+# Skewness
+
+market_cap1_avgreturn_skew = market_cap1_avgreturn.skew()
+market_cap2_avgreturn_skew = market_cap2_avgreturn.skew()
+market_cap3_avgreturn_skew = market_cap3_avgreturn.skew()
+market_cap_nafree_avgreturn_skew = market_cap_nafree_avgreturn.skew()
+
+
+# Kurtosis
+
+market_cap1_avgreturn_kurt = market_cap1_avgreturn.kurt()
+market_cap2_avgreturn_kurt = market_cap2_avgreturn.kurt()
+market_cap3_avgreturn_kurt = market_cap3_avgreturn.kurt()
+market_cap_nafree_avgreturn_kurt = market_cap_nafree_avgreturn.kurt()
+
+
+# Minimum
+
+market_cap1_avgreturn_min = market_cap1_avgreturn.min()
+market_cap2_avgreturn_min = market_cap2_avgreturn.min()
+market_cap3_avgreturn_min = market_cap3_avgreturn.min()
+markret_cap_nafree_avgreturn_min = market_cap_nafree_avgreturn.min()
+
+
+
+# Maximum
+
+market_cap1_avgreturn_max = market_cap1_avgreturn.max()
+market_cap2_avgreturn_max = market_cap2_avgreturn.max()
+market_cap3_avgreturn_max = market_cap3_avgreturn.max()
+markret_cap_nafree_avgreturn_max = market_cap_nafree_avgreturn.max()
+"""
+
+
+"""
+
 """
 
 # Question 2  --------------------
+"""
 
-
-market_cap = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Market Cap").dropna()
+mar"ket_cap = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Market Cap").dropna()
 market_cap_nafree = market_cap.iloc[1::,2::]
 
 #DATA CLEANING & Montly scaled :
@@ -66,7 +168,6 @@ pct_change_mean = np.mean(pct_change, axis=0)
 
 stock = market_cap_nafree/market_cap_nafree.shift(1)
 stock = stock.iloc[1:,:]
-stock = stock
 print(stock)
 cov_excess = stock.cov()
 pct_change_mean = np.mean(stock)
@@ -77,7 +178,7 @@ portfolio_returns = []
 portfolio_volatilities = []
 weights_vec = []
 #replace 97 by the exact number of companies's stock in the portfolio
-for x in range(1000):
+for x in range(10000):
     weights = np.random.random(97)
     weights /= np.sum(weights)
     portfolio_returns.append(np.sum(pct_change_mean*weights))
@@ -94,15 +195,16 @@ portfolios_frt.plot(x="Volatility", y="Return", kind="scatter", color="blue", s=
 plt.xlabel("Expected Volatility")
 plt.ylabel("Expected Return")
 plt.show()
+"""
+
+
+
+
+# Question 3 -------------------------------------------------------------------
 
 """
-# Question 3 -------------------------------------------------------------------
-<<<<<<< HEAD
-
 prtf_mean = []  #random pas crée dans la loupe
-=======
-prtf_mean = []
->>>>>>> ddcb7fbbfdb7e42775721d602aecfb58cb59a4f0
+
 prtf_cov = []
 # Generate x -> Px new samples from the original distribution of mean "pct_change_mean, and variance
 # the diagonal of "cov_excess", and compute mean return and cov matrix of the new sample
@@ -144,7 +246,7 @@ plt.scatter(portfolio_volatilities,portfolio_returns, s=4, color ="blue")
 plt.xlabel("Expected Volatility")
 plt.ylabel("Expected Return")
 plt.show()
-"""
+
 
 # Question 4 ---------------------------------------------------------------------
 
@@ -152,8 +254,23 @@ min = np.min(portfolio_volatilities)
 index_min = np.argmin(portfolio_volatilities)
 print(weights_vec[index_min])
 print("The MVP has a volatility of " +str(min))
+print("Annualized average return is : "+str((portfolio_returns[index_min]-1)*12))
 
-print("annualized average return is : "+str((portfolio_returns[index_min]-1)*12))
+stock = pd.DataFrame.resample(stock, "Y")
+stock = stock.mean()
+stock = pd.DataFrame.mean(stock, axis=1)
+print(weights_vec)
+print(stock)
+
+
+print("The minimum annual return is : "+str(np.min(weights_vec[index_min]*stock)))
+
+"""
+
+
+
+
+
 
 
 
