@@ -34,3 +34,11 @@ for ra in lambdas:
 
 
 print((covin@e)/e.T@covin@e)
+-------------------------
+alpha = np.full(97, 1)
+def sigma(mu):
+    sigm = np.sqrt(np.dot(mu.T, np.dot(cov_excess, mu)))
+    return sigm
+
+res = scipy.optimize.minimize(sigma,alpha )
+print(len(res.x))
