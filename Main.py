@@ -168,8 +168,6 @@ plt.show()
 min = np.min(portfolio_volatilities)
 index_min = np.argmin(portfolio_volatilities)
 
-# !!!!!!!!!!!!!!!VERIFIER L INDEX DI MUN VAR DANS LE VEC WEIGHT, SI NECESSAIRE AJOUTER 1 !!!!!!!!!!!!!!!!!!
-
 print("The GMVP has an annualized volatility of " + str(min * 12))
 print("GMVP Annualized average return is : " + str((np.mean(portfolio_returns[index_min]) - 1) * 12))
 
@@ -516,18 +514,28 @@ print(print_info("Value weighted rolling window portfolio",saved_returns, cov_ex
 # QUESTION 7------------------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------------------------
 
+
+#DATA taken
 co2 = pd.read_excel("Data QARM.xlsx", engine="openpyxl", sheet_name="CO2 Emissions")
 revenue = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Revenue")
 
-co2 = co2.iloc[1::, 2::]
+co2 = co2.iloc[::, 2::]
 co2 = pd.DataFrame.transpose(co2)
 co2.index = pd.to_datetime(co2.index)
-co2 = pd.DataFrame.resample(co2, "Y").mean()
+co2 = pd.DataFrame.resample(co2, "YS").mean()
 co2 = co2.iloc[21,::]
-print(co2)
-revenue = revenue.iloc[1::, 2::]
+
+revenue = revenue.iloc[::, 2::]
 revenue = pd.DataFrame.transpose(revenue)
 revenue.index = pd.to_datetime(revenue.index)
-revenue = pd.DataFrame.resample(revenue, "Y").mean()
+revenue = pd.DataFrame.resample(revenue, "YS").mean()
 revenue = revenue.iloc[21,::]
-print(revenue)
+
+c_intensity = co2/revenue
+c_intensity = c_intensity.dropna()
+print(c_intensity)
+
+#----------------------------------------------------------------------------------------------------------------------
+#QUESTION 8   -------------------------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------------------------------------
+
