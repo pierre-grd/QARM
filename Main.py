@@ -24,7 +24,7 @@ market_cap_sectors = market_cap.merge(feuille1, how="left", on='ISIN')
 # Question 1 - --------------------------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------------------------------------
 
-Seperate Data by Sector : Extrapolate 3 most represented and Analyze Mean, Variance,
+#Seperate Data by Sector : Extrapolate 3 most represented and Analyze Mean, Variance,
 # skewness, kurtosis, minimum, and maximum.
 
 
@@ -147,10 +147,10 @@ market_cap1_avgreturn_max = market_cap1_avgreturn.max()
 market_cap2_avgreturn_max = market_cap2_avgreturn.max()
 market_cap3_avgreturn_max = market_cap3_avgreturn.max()
 markret_cap_nafree_avgreturn_max = market_cap_nafree_avgreturn.max()
-"""
 
 
-"""
+
+
 
 # -----------------------------------------------------------------------------------------------------------------------
 # Question 2 -----------------------------------------------------------------------------------------------------------
@@ -222,8 +222,8 @@ portfolios_frt.plot(x="Volatility", y="Return", kind="scatter", color="blue", s=
 plt.xlabel("Monthly Expected Volatility")
 plt.ylabel("Monthly Expected Return")
 plt.show()
-"""
 
+"""
 
 
 
@@ -275,9 +275,9 @@ plt.scatter(portfolio_volatilities,portfolio_returns, s=4, color ="blue")
 plt.xlabel("Expected Volatility")
 plt.ylabel("Expected Return")
 plt.show()
+"""
 
-
-
+"""
 # Question 4 ---------------------------------------------------------------------
 
 
@@ -348,11 +348,11 @@ def print_info(prtf_name, returns, cov, weights, period=12):
 
 
 print_info("value weighted", VW_returns, cov_excess, VW_weight)
-
+"""
 # ---------------------------------------------------------------------------------------------------------------------
 # QUESTION 5 ---------------------------------------------------------------------------------------------------------
 # ---------------------------------------------------------------------------------------------------------------------
-""
+"""
 # Resample to the first 5 years / 60 months :
 market_cap = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Market Cap").dropna()
 market_cap_nafree = market_cap.iloc[1::, 2::]
@@ -406,10 +406,12 @@ for i in range(203):
 print(saved_returns)
 print(len(saved_returns))
 """
+
+"""
 # ----------------------------------------------------------------------------------------------------------------------
 # QUESTION 6------------------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------------------------
-"""
+
 #the function under is written for positive weights only,
 def return_min_var_alpha_POSNEG(mu, cov, gen=30000, sharesnumber = 97):
     portfolio_returns = []
@@ -433,10 +435,169 @@ def return_min_var_alpha_POSNEG(mu, cov, gen=30000, sharesnumber = 97):
 # QUESTION 7------------------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------------------------
 
+co_2 = co_2.T
+co_2 = co_2.iloc[254:: , :: ]
+co_2 = co_2.dropna(axis=1)
+"co_2.drop(co_2.iloc[:, [3]], axis=1)"
+print (co_2)
 
-print("The minimum annual return is : "+str(np.min(weights_vec[index_min]*stock)))
+revenue = revenue.T
+revenue = revenue.iloc[254:: , :: ]
+revenue = revenue.dropna(axis=1)
+"print(revenue)"
+
+
+
 
 """
+revenue_1 = revenue.iloc[:, 3]
+revenue_2 = revenue.iloc[:, 4]
+revenue_3 = revenue.iloc[:, 14]
+revenue_4 = revenue.iloc[:, 3]
+revenue_5 = revenue.iloc[:, 3]
+revenue_6 = revenue.iloc[:, 3]
+revenue_7 = revenue.iloc[:, 3]
+revenue_8 = revenue.iloc[:, 3]
+revenue_9 = revenue.iloc[:, 3]
+revenue_10 = revenue.iloc[:, 105]
+revenue_11 = revenue.iloc[:, 113]
+revenue_12= revenue.iloc[:, 120]
+"""
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
