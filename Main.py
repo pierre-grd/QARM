@@ -636,7 +636,7 @@ print(print_info("Value weighted rolling window portfolio",saved_returns, cov_ex
 # QUESTION 7------------------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------------------------
 
-
+"""
 #DATA taken
 co2 = pd.read_excel("Data QARM.xlsx", engine="openpyxl", sheet_name="CO2 Emissions")
 revenue = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Revenue")
@@ -657,47 +657,48 @@ c_intensity = co2/revenue
 c_intensity = c_intensity.dropna()
 print(c_intensity)
 
+#portfolio with positive weights with only those with a carbon intensity surveyed
+
+
+"""
 #----------------------------------------------------------------------------------------------------------------------
 #QUESTION 8   -------------------------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------------------------------------
 
-co_2 = co_2.T
-co_2 = co_2.iloc[254:: , :: ]
+co2 = pd.read_excel("Data QARM.xlsx", engine="openpyxl", sheet_name="CO2 Emissions")
+revenue = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Revenue")
+market_cap = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Market Cap").dropna()
 
-co_2 = co_2.dropna(axis=1)
-"co_2.drop(co_2.iloc[:, [3]], axis=1)"
-print (co_2)
+market_cap_nafree = market_cap.iloc[1::, 2::]
+market_cap_nafree = pd.DataFrame.transpose(market_cap_nafree)
+market_cap_nafree.index = pd.to_datetime(market_cap_nafree.index)
+market_cap_nafree = pd.DataFrame.resample(market_cap_nafree, "M").mean()
+market_cap_nafree = market_cap_nafree.T
 
-revenue = revenue.T
-revenue = revenue.iloc[254:: , :: ]
-revenue = revenue.dropna(axis=1)
-"print(revenue)"
+co2 = co2.iloc[::, 2::]
+co2 = pd.DataFrame.transpose(co2)
+co2.index = pd.to_datetime(co2.index)
+co2 = pd.DataFrame.resample(co2, "YS").mean()
+co2 = co2.iloc[21,::]
 
+revenue = revenue.iloc[::, 2::]
+revenue = pd.DataFrame.transpose(revenue)
+revenue.index = pd.to_datetime(revenue.index)
+revenue = pd.DataFrame.resample(revenue, "YS").mean()
+revenue = revenue.iloc[21,::]
 
+c_intensity = co2/revenue
+c_intensity = c_intensity.dropna()
+c_intensity = c_intensity.T
+# Merging carbon intensity with the residual informations about revenue on the same period
+print(c_intensity.T)
+print(market_cap_nafree)
+merged_co2_cap = market_cap_nafree.merge(c_intensity, left_index = True, right_index = True)
+print(merged_co2_cap)
 
+Portfolio_value = 1000000
 
-
-"""
-revenue_1 = revenue.iloc[:, 3]
-revenue_2 = revenue.iloc[:, 4]
-revenue_3 = revenue.iloc[:, 14]
-revenue_4 = revenue.iloc[:, 3]
-revenue_5 = revenue.iloc[:, 3]
-revenue_6 = revenue.iloc[:, 3]
-revenue_7 = revenue.iloc[:, 3]
-revenue_8 = revenue.iloc[:, 3]
-revenue_9 = revenue.iloc[:, 3]
-revenue_10 = revenue.iloc[:, 105]
-revenue_11 = revenue.iloc[:, 113]
-revenue_12= revenue.iloc[:, 120]
-"""
-
-
-
-
-
-
-
+#Reusing the initial minimal variance portfolio with positive weights
 
 
 
