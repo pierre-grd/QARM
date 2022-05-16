@@ -6,7 +6,7 @@ import openpyxl
 import scipy.optimize
 import scipy.stats as sp
 
-
+"""
 co_2 = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="CO2 Emissions")
 market_cap = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Market Cap").dropna()
 feuille1 = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Feuille 1 - Group_P")
@@ -19,12 +19,12 @@ tt_return_index = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_nam
 
 market_cap_sectors = market_cap.merge(feuille1, how="left", on='ISIN')
 
-
+"""
 
 #----------------------------------------------------------------------------------------------------------------------
 # Question 1 - --------------------------------------------------------------------------------------------------------
 #----------------------------------------------------------------------------------------------------------------------
-
+"""
 #Seperate Data by Sector : Extrapolate 3 most represented and Analyze Mean, Variance,
 # skewness, kurtosis, minimum, and maximum.
 
@@ -43,7 +43,7 @@ c = collections.Counter(mylist)
 # Delete every company that is not part of the 3 sectors
 
 # Industrials = market_cap()
-
+"""
 """
 market_cap1 = market_cap_sectors.loc[market_cap_sectors['GICSSector'].str.contains('Industrials')]
 market_cap2 = market_cap_sectors.loc[market_cap_sectors['GICSSector'].str.contains('Financials')]
@@ -165,7 +165,7 @@ market_cap_nafree = pd.DataFrame.transpose(market_cap_nafree)
 market_cap_nafree.index = pd.to_datetime(market_cap_nafree.index)
 market_cap_nafree = pd.DataFrame.resample(market_cap_nafree, "M").mean()
 
-stock = market_cap_nafree / market_cap_nafree.shift(1)
+stock = market_cap_nafree.pct_change()
 stock = stock.iloc[1:, :]
 cov_excess = stock.cov()
 pct_change_mean = np.mean(stock)
@@ -174,42 +174,39 @@ portfolio_returns = []
 portfolio_volatilities = []
 weights_vec = []
 
-#NEGATIVE & POSITIVE WEIGHTS :
+stock_mu = pct_change_mean.shape[0]
+e = np.ones((stock_mu, 1))
+pct_change_mean = np.array(pct_change_mean)
+cov_excess = np.array(cov_excess)
+covin = np.linalg.inv(cov_excess)
 
-for x in range(500000):
-    weights = np.random.uniform(-1, 1, 97)
-    weights /= np.sum(weights)
-    portfolio_returns.append(np.sum(pct_change_mean * weights))
-    portfolio_volatilities.append(np.sqrt(np.dot(weights.T, np.dot(cov_excess, weights))))
-    weights_vec.append(weights)
+def mvp_alphas(lambd, stocks, cov):
+    cov_in = np.linalg.inv(cov)
+    stock_mu = stocks.shape[0]
+    e = np.ones((stock_mu, 1))
+    A = (cov_in @ e)/(e.T @ cov_in @ e)
+    B = (1/lambd) * cov_in
+    C = ((e.T @ cov_in @ stocks)/(e.T @ cov_in @ e))*e
+    print(stocks)
+    print(C)
+    D = stocks - C
+    alpha = A + B*D
+    return alpha
 
+lambdas = range(500, 5001)
 
-portfolio_returns = np.array(portfolio_returns)
-portfolio_volatilities = np.array(portfolio_volatilities)
-weights_vec = np.array(weights_vec)
+def gen_pfl(lambdas, mu, cov):
+   for i in lambdas:
+      print(i)
+      weights = mvp_alphas(i/100, mu, cov)
+      weights = weights[1]
+      retur_n = weights.T @ mu
+      volat = np.sqrt(weights.T @ cov @ weights)
+      portfolio_returns.append(retur_n)
+      portfolio_volatilities.append(volat)
+   return portfolio_returns, portfolio_volatilities
 
-portfolios_frt = pd.DataFrame({"Return": portfolio_returns, "Volatility": portfolio_volatilities})
-portfolios_frt.plot(x="Volatility", y="Return", kind="scatter", color="blue", s=4)
-plt.xlabel("Monthly Expected Volatility")
-plt.xlim([0.05, 0.15])
-plt.ylim([0.975, 1.05])
-plt.ylabel("Monthly Expected Return")
-plt.show()
-
-
-
-#POSITIVE WEIGHTS ONLY :
-
-portfolio_returns = []
-portfolio_volatilities = []
-weights_vec = []
-
-for x in range(50000):
-    weights = np.random.uniform(0,1,97)
-    weights /= np.sum(weights)
-    portfolio_returns.append(np.sum(pct_change_mean * weights))
-    portfolio_volatilities.append(np.sqrt(np.dot(weights.T, np.dot(cov_excess, weights))))
-    weights_vec.append(weights)
+gen_pfl(lambdas, pct_change_mean, cov_excess)
 
 portfolio_returns = np.array(portfolio_returns)
 portfolio_volatilities = np.array(portfolio_volatilities)
@@ -220,33 +217,57 @@ portfolios_frt.plot(x="Volatility", y="Return", kind="scatter", color="blue", s=
 plt.xlabel("Monthly Expected Volatility")
 plt.ylabel("Monthly Expected Return")
 plt.show()
+
 """
-
 # -----------------------------------------------------------------------------------------------------------------------
 # Question 3 -----------------------------------------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------------------------------------
-"""
+
 market_cap = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Market Cap").dropna()
 market_cap_nafree = market_cap.iloc[1::, 2::]
+
+lambdas = list(range(500, 5000))
+
+def mvp_alphas(lambd, stocks, cov):
+    cov_in = np.linalg.inv(cov)
+    stock_mu = stocks.shape[0]
+    e = np.ones((stock_mu, 1))
+    A = (cov_in @ e)/(e.T @ cov_in @ e)
+    B = (1/lambd) * cov_in
+    C = ((e.T @ cov_in @ stocks)/(e.T @ cov_in @ e))*e
+    D = stocks - C
+    alpha = A + B*D
+    return alpha
+
+def gen_pfl(lambdas, mu, cov):
+   for i in lambdas:
+      print(i)
+      weights = mvp_alphas(i/100, mu, cov)
+      weights = weights[1]
+      retur_n = weights.T @ mu
+      volat = np.sqrt(weights.T @ cov @ weights)
+      portfolio_returns.append(retur_n)
+      portfolio_volatilities.append(volat)
+   return portfolio_returns, portfolio_volatilities
 
 # DATA CLEANING & Montly scaling :
 
 market_cap_nafree = pd.DataFrame.transpose(market_cap_nafree)
 market_cap_nafree.index = pd.to_datetime(market_cap_nafree.index)
 market_cap_nafree = pd.DataFrame.resample(market_cap_nafree, "M").mean()
-
-stock = market_cap_nafree / market_cap_nafree.shift(1)
+stock = market_cap_nafree.pct_change()
 stock = stock.iloc[1:, :]
 cov_excess = stock.cov()
 pct_change_mean = np.mean(stock)
-
+pct_change_mean = np.array(pct_change_mean)
+cov_excess = np.array(cov_excess)
 prtf_mean = []
 prtf_cov = []
 # Generate x -> Px new samples from the original distribution of mean "pct_change_mean, and variance
 # the diagonal of "cov_excess", and compute mean return and cov matrix of the new sample
 new_P = []
 
-for i in range (1,500):
+for i in range (100):
   print("Portfolio "+str(i)+"/100 Generated")
   for x in range (275): #replace 275 by the new period count if it is shifted to daily returns
     new_P.append(np.random.normal(pct_change_mean, np.diagonal(cov_excess)))
@@ -257,19 +278,19 @@ for i in range (1,500):
   prtf_cov.append(var)
   new_P = []
 
+print(pct_change_mean)
+print(cov_excess)
 #We now have 100 sample of normaly distributed returns
 #from the original data filled into prtf_mean and prtf_cov
 
-prtf_mean = np.transpose(prtf_mean)
-prtf_mean = pd.DataFrame(prtf_mean)
 
 portfolio_returns = []
 portfolio_volatilities = []
 
-for i in range(100):
- for x in range(499):
-    weights = np.random.random(97)
-    weights /= np.sum(weights)
+
+for x in range(100):
+    weights = mvp_alphas(100000, pct_change_mean, cov_excess)
+    weights = weights[1]
     portfolio_returns.append(np.sum(prtf_mean[x]*weights))
     portfolio_volatilities.append(np.sqrt(np.dot(weights.T, np.dot(prtf_cov[x],weights))))
 
@@ -283,7 +304,7 @@ plt.ylabel("Expected Return")
 plt.xlim([0, 0.15])
 plt.ylim([0.975, 1.05])
 plt.show()
-"""
+
 # -----------------------------------------------------------------------------------------------------------------------
 # Question 4 -----------------------------------------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------------------------------------

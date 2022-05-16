@@ -25,8 +25,8 @@ portfolio_returns = []
 
 portfolio_volatilities = []
 
-for ra in lambdas:
-    weights = MVPs(ra, pct_change_mean, cov_excess)
+for i in lambdas:
+    weights = MVPs(i, pct_change_mean, cov_excess)
     retur_n = weights.T @ pct_change_mean
     volat = np.sqrt(weights.T @ cov_excess @ weights)
     portfolio_returns.append(retur_n)
