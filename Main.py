@@ -6,7 +6,7 @@ import openpyxl
 import scipy.optimize
 import scipy.stats as sp
 
-
+"""
 co_2 = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="CO2 Emissions")
 market_cap = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Market Cap").dropna()
 feuille1 = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Feuille 1 - Group_P")
@@ -43,7 +43,7 @@ c = collections.Counter(mylist)
 # Delete every company that is not part of the 3 sectors
 
 # Industrials = market_cap()
-
+"""
 """
 market_cap1 = market_cap_sectors.loc[market_cap_sectors['GICSSector'].str.contains('Industrials')]
 market_cap2 = market_cap_sectors.loc[market_cap_sectors['GICSSector'].str.contains('Financials')]
@@ -159,7 +159,7 @@ markret_cap_nafree_avgreturn_max = market_cap_nafree_avgreturn.max()
 # -----------------------------------------------------------------------------------------------------------------------
 # Question 2 -----------------------------------------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------------------------------------
-"""
+
 market_cap = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Market Cap").dropna()
 market_cap_nafree = market_cap.iloc[1::, 2::]
 
@@ -224,7 +224,6 @@ portfolios_frt.plot(x="Volatility", y="Return", kind="scatter", color="blue", s=
 plt.xlabel("Monthly Expected Volatility")
 plt.ylabel("Monthly Expected Return")
 plt.show()
-"""
 
 # -----------------------------------------------------------------------------------------------------------------------
 # Question 3 -----------------------------------------------------------------------------------------------------------
@@ -292,19 +291,38 @@ plt.show()
 # Question 4 -----------------------------------------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------------------------------------
 """
+market_cap = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Market Cap").dropna()
+market_cap_nafree = market_cap.iloc[1::, 2::]
+market_cap_nafree = pd.DataFrame.transpose(market_cap_nafree)
+market_cap_nafree.index = pd.to_datetime(market_cap_nafree.index)
+market_cap_nafree = pd.DataFrame.resample(market_cap_nafree, "M").mean()
+stock = market_cap_nafree.pct_change()
+stock = stock.iloc[1:, :]
+cov_excess = stock.cov()
+covin = cov_excess
+pct_change_mean = np.mean(stock)
+pct_change_mean = np.array(pct_change_mean)
+cov_excess = np.array(cov_excess)
+prtf_mean = []
+prtf_cov = []
 
-min = np.min(portfolio_volatilities)
-index_min = np.argmin(portfolio_volatilities)
-
-print("The GMVP has an annualized volatility of " + str(min * 12))
-print("GMVP Annualized average return is : " + str((np.mean(portfolio_returns[index_min]) - 1) * 12))
-
-stock_for_mv = weights_vec[index_min] * stock
-
-stock_for_mv = pd.DataFrame.mean(stock_for_mv, axis=1)
-print("GMV portfolio MIN ANN Return: " + str(pd.DataFrame.min(stock_for_mv) * 12))
-print("GMV portfolio MAX ANN Return : " + str(pd.DataFrame.max(stock_for_mv) * 12))
-
+def return_min_var_alpha_POSNEG(mu, cov, gen=20000, sharesnumber=97):
+    portfolio_returns = []
+    portfolio_volatilities = []
+    weights_vec = []
+    for x in range(gen):
+        weights = np.random.uniform(-1, 1, sharesnumber)
+        weights /= np.sum(weights)
+        portfolio_returns.append(np.sum(mu * weights))
+        portfolio_volatilities.append(np.sqrt(np.dot(weights.T, np.dot(cov, weights))))
+        weights_vec.append(weights)
+    portfolio_returns = np.array(portfolio_returns)
+    portfolio_volatilities = np.array(portfolio_volatilities)
+    weights_vec = np.array(weights_vec)
+    index_min = np.argmin(portfolio_volatilities)
+    ret = portfolio_returns[index_min]
+    alpha = weights_vec[index_min]
+    return alpha
 
 def var_gaussian(r, level=10, modified=True):
     # compute the Z score assuming it was Gaussian
@@ -320,10 +338,23 @@ def var_gaussian(r, level=10, modified=True):
              )
     return -(r.mean() + z * np.std(r))
 
-
 def ES(r, cov, alpha=1):
     CVaR_n = alpha ** -1 * sp.norm.pdf(sp.norm.ppf(alpha)) * cov - r
     return CVaR_n
+
+min = np.min(portfolio_volatilities)
+index_min = np.argmin(portfolio_volatilities)
+
+print("The GMVP has an annualized volatility of " + str(min * 12))
+print("GMVP Annualized average return is : " + str((np.mean(portfolio_returns[index_min]) - 1) * 12))
+
+stock_for_mv = weights_vec[index_min] * stock
+
+stock_for_mv = pd.DataFrame.mean(stock_for_mv, axis=1)
+print("GMV portfolio MIN ANN Return: " + str(pd.DataFrame.min(stock_for_mv) * 12))
+print("GMV portfolio MAX ANN Return : " + str(pd.DataFrame.max(stock_for_mv) * 12))
+
+
 
 
 print("MVP portfolio VaR " + str(var_gaussian(stock_for_mv)))
@@ -652,7 +683,7 @@ print(print_info("Value weighted rolling window portfolio",saved_returns, cov_ex
 # QUESTION 7------------------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------------------------
 
-"""
+
 #DATA taken
 co2 = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="CO2 Emissions")
 revenue = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Revenue")
@@ -770,7 +801,7 @@ print(Poos_returns)
 print(print_info("Poos/b+ portfolio on 6 year rolling window GMVP",Poos_returns,cov_excess, saved_alphas[np.argmin(saved_covariances)]))
 
 
-"""
+
 
 #----------------------------------------------------------------------------------------------------------------------
 #QUESTION 8   -------------------------------------------------------------------------------------------------------
@@ -778,7 +809,7 @@ print(print_info("Poos/b+ portfolio on 6 year rolling window GMVP",Poos_returns,
 
 
 
-"""
+
 co2 = pd.read_excel("Data QARM.xlsx", engine="openpyxl", sheet_name="CO2 Emissions")
 revenue = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Revenue")
 market_cap = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Market Cap").dropna()
@@ -815,7 +846,7 @@ Portfolio_value = 1000000
 #Reusing the initial minimal variance portfolio with positive weights
 
 
-"""
+
 
 
 
