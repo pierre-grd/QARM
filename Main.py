@@ -111,11 +111,14 @@ markret_cap_nafree_avgreturn_mean = market_cap_nafree_avgreturn.mean()
 
 # Standard deviation annualized
 
-market_cap1_avgreturn_std = market_cap1_avgreturn.std()
-market_cap2_avgreturn_std = market_cap2_avgreturn.std()
-market_cap3_avgreturn_std = market_cap3_avgreturn.std()
-markret_cap_nafree_avgreturn_std = market_cap_nafree_avgreturn.std()
-
+market_cap1_avgreturn_std = np.std(market_cap1_avgreturn)
+market_cap2_avgreturn_std = np.std(market_cap2_avgreturn)
+market_cap3_avgreturn_std = np.std(market_cap3_avgreturn)
+markret_cap_nafree_avgreturn_std = np.std(market_cap_nafree_avgreturn)
+print(market_cap1_avgreturn_std)
+print(market_cap2_avgreturn_std)
+print(market_cap3_avgreturn_std)
+print(markret_cap_nafree_avgreturn_std)
 
 # Skewness
 
@@ -149,8 +152,9 @@ market_cap2_avgreturn_max = market_cap2_avgreturn.max()
 market_cap3_avgreturn_max = market_cap3_avgreturn.max()
 markret_cap_nafree_avgreturn_max = market_cap_nafree_avgreturn.max()
 
-"""
 
+
+"""
 
 # -----------------------------------------------------------------------------------------------------------------------
 # Question 2 -----------------------------------------------------------------------------------------------------------
@@ -711,6 +715,27 @@ Portfolio_value = 1000000
 # -------------------------------------------------------------------------------------
 # PART 2
 # -------------------------------------------------------------------------------------
+
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# QUESTION 1   -------------------------------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
