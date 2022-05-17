@@ -159,7 +159,7 @@ markret_cap_nafree_avgreturn_max = market_cap_nafree_avgreturn.max()
 # -----------------------------------------------------------------------------------------------------------------------
 # Question 2 -----------------------------------------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------------------------------------
-
+"""
 market_cap = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Market Cap").dropna()
 market_cap_nafree = market_cap.iloc[1::, 2::]
 
@@ -224,7 +224,7 @@ portfolios_frt.plot(x="Volatility", y="Return", kind="scatter", color="blue", s=
 plt.xlabel("Monthly Expected Volatility")
 plt.ylabel("Monthly Expected Return")
 plt.show()
-
+"""
 # -----------------------------------------------------------------------------------------------------------------------
 # Question 3 -----------------------------------------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------------------------------------
@@ -683,6 +683,7 @@ print(print_info("Value weighted rolling window portfolio",saved_returns, cov_ex
 # QUESTION 7------------------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------------------------
 
+"""
 
 #DATA taken
 co2 = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="CO2 Emissions")
@@ -846,26 +847,158 @@ Portfolio_value = 1000000
 #Reusing the initial minimal variance portfolio with positive weights
 
 
-
-
-
-
+"""
 
 
 # -------------------------------------------------------------------------------------
 # PART 2
 # -------------------------------------------------------------------------------------
 
-
-
 # ----------------------------------------------------------------------------------------------------------------------
 # QUESTION 1   -------------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------------------------
 
 
+#DATA For carbon intensity
+
+co2 = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="CO2 Emissions")
+revenue = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Revenue")
+
+co2 = co2.iloc[::, 2::]
+co2 = pd.DataFrame.transpose(co2)
+co2.index = pd.to_datetime(co2.index)
+co2 = pd.DataFrame.resample(co2, "YS").mean()
+co2 = co2.iloc[21,::]
+
+revenue = revenue.iloc[::, 2::]
+revenue = pd.DataFrame.transpose(revenue)
+revenue.index = pd.to_datetime(revenue.index)
+revenue = pd.DataFrame.resample(revenue, "YS").mean()
+revenue = revenue.iloc[21,::]
+
+c_intensity = co2/revenue
+c_intensity = c_intensity.dropna()
+print(c_intensity)
+
+#portfolio with positive weights with only those with a carbon intensity surveyed (Poos/b+) :
 
 
+market_cap = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Market Cap").dropna()
+market_cap_nafree = market_cap.iloc[1::, 2::]
+market_cap_nafree = pd.DataFrame.transpose(market_cap_nafree)
+market_cap_nafree.index = pd.to_datetime(market_cap_nafree.index)
+market_cap_nafree = pd.DataFrame.resample(market_cap_nafree, "M").mean()
+#market_cap_nafree = market_cap_nafree.iloc[:72, :]
+market_cap_nafree = market_cap_nafree.T
+merged_co2_cap = market_cap_nafree.merge(c_intensity, left_index = True, right_index = True)
+market_cap_nafree = merged_co2_cap.iloc[::,0:6001]
+market_cap_nafree = market_cap_nafree.T
+# pct_change = market_cap_nafree.pct_change(axis=0)
+# pct_change = pct_change.iloc[1:,:]
+# pct_change_mean = np.mean(pct_change, axis=0)
+stock = market_cap_nafree / market_cap_nafree.shift(1)
+stock = stock.iloc[1:, :]
+cov_excess = stock.cov()
+pct_change_mean = np.mean(stock)
 
+def return_min_var_alpha_POS(mu, cov, gen=200, sharesnumber = 92):
+
+    portfolio_returns = []
+    portfolio_volatilities = []
+    weights_vec = []
+    for x in range(gen):
+        weights = np.random.uniform(0, 1, sharesnumber)
+        weights /= np.sum(weights)
+        portfolio_returns.append(np.sum(mu * weights))
+        portfolio_volatilities.append(np.sqrt(np.dot(weights.T, np.dot(cov, weights))))
+        weights_vec.append(weights)
+    portfolio_returns = np.array(portfolio_returns)
+    portfolio_volatilities = np.array(portfolio_volatilities)
+    weights_vec = np.array(weights_vec)
+    index_min = np.argmin(portfolio_volatilities)
+    ret = portfolio_returns[index_min]
+    alpha = weights_vec[index_min]
+    return alpha
+
+def var_gaussian(r, level=10, modified=True):
+    # compute the Z score assuming it was Gaussian
+    z = sp.norm.ppf(level / 100)
+    if modified:
+        # modify the Z score based on observed skewness and kurtosis
+        s = sp.skew(r)
+        k = sp.kurtosis(r)
+        z = (z +
+             (z ** 2 - 1) * s / 6 +
+             (z ** 3 - 3 * z) * (k - 3) / 24 -
+             (2 * z ** 3 - 5 * z) * (s ** 2) / 36
+             )
+    return -(np.mean(r) + z * np.std(r))
+
+def ES(r, cov, alpha=1):
+    CVaR_n = alpha ** -1 * sp.norm.pdf(sp.norm.ppf(alpha)) * cov - r
+    return CVaR_n
+
+def print_info(prtf_name, returns, cov, weights, period=12):
+    print(str(prtf_name) + " annual volatility of " + str(np.sqrt(np.dot(weights.T, np.dot(cov, weights))) * period))
+    print(str(prtf_name)+" annual average return of " + str((((np.mean(returns)))) * period))
+    print(str(prtf_name)+" MAX  Return : " + str(((np.max(returns))) * period))
+    print(str(prtf_name)+" MIN  Return : " + str(((np.min(returns))) * period))
+    print(str(prtf_name)+" VaR (on period data): " + str(var_gaussian(returns)))
+    print(str(prtf_name)+" ES (on period data): " + str(ES(np.mean(returns), np.sqrt(np.dot(weights.T, np.dot(cov, weights))))))
+
+saved_returns = []
+saved_covariances = []
+saved_alphas = []
+saved_covs = []
+
+#Recompute the alphas for each monthly period
+
+for i in range(204):
+    market_cap_sixyear = market_cap_nafree.iloc[i:i + 72, :]
+    stock = market_cap_sixyear / market_cap_sixyear.shift(1)
+    stock = stock.iloc[1:, :]
+    cov_excess = stock.cov()
+    pct_change_mean = np.mean(stock)
+    print(str(i)+"/203 monthly periods completed")
+    alpha = return_min_var_alpha_POS(pct_change_mean,cov_excess)
+    saved_returns.append(pct_change_mean * alpha)
+    saved_covariances.append(np.sqrt(np.dot(alpha.T, np.dot(cov_excess, alpha))))
+    saved_alphas.append(alpha)
+    saved_covs.append(cov_excess)
+
+#print(print_info("First 6 year out of sample GMVP",saved_returns[0],saved_covariances[0], saved_alphas[0]))
+Poos_returns = []
+
+#New importation of the daily returns, and reducing the set of those with a carbon intensity
+
+market_cap = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Market Cap").dropna()
+market_cap_nafree = market_cap.iloc[1::, 2::]
+merged_co2_cap = market_cap_nafree.merge(c_intensity, left_index = True, right_index = True)
+market_cap_nafree = merged_co2_cap.iloc[::,0:6001]
+market_cap_nafree = market_cap_nafree.T
+stock = market_cap_nafree / market_cap_nafree.shift(1)
+stock = stock.iloc[1:, :]
+cov_excess = stock.cov()
+pct_change_mean = np.mean(stock)
+daily_returns = []
+daily_vol = []
+total_return = []
+
+for i in range (30,4000):
+    print(i)
+    returns = stock.iloc[i,:] @ saved_alphas[int((i/30)-1)]
+    total_return.append(np.multiply(stock.iloc[i,:],saved_alphas[int((i/30)-1)]))
+    daily_returns.append(returns)
+    vol = saved_alphas[int((i/30))-1] @ saved_covs[int((i/30))-1] @ saved_alphas[int((i/30))-1]
+    daily_vol.append(vol)
+
+
+#LE TRUC POUR LE Pédé est ci dessous :
+print(returns)
+#NON, c'est au dessus
+
+
+#print(print_info("Poos/b+ portfolio on 6 year rolling window GMVP (daily returns)",Poos_returns,cov_excess, saved_alphas[np.argmin(saved_covariances)]))
 
 
 
