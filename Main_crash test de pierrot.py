@@ -151,7 +151,6 @@ markret_cap_nafree_avgreturn_max = market_cap_nafree_avgreturn.max()
 
 """
 
-
 # -----------------------------------------------------------------------------------------------------------------------
 # Question 2 -----------------------------------------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------------------------------------
@@ -187,26 +186,27 @@ def mvp_alphas(lambd, stocks, cov):
     A = (cov_in @ e)/(e.T @ cov_in @ e)
     B = (1/lambd) * cov_in
     C = ((e.T @ cov_in @ stocks)/(e.T @ cov_in @ e))*e
-    print(stocks)
-    print(C)
     D = stocks - C
     alpha = A + B*D
-    return alpha
+    return alpha[:,1]
 
-lambdas = range(500, 5001)
+lambdas = range(50,5000)
+e = np.ones((97, 1))
+
 
 def gen_pfl(lambdas, mu, cov):
    for i in lambdas:
       print(i)
-      weights = mvp_alphas(i/100, mu, cov)
-      weights = weights[1]
-      retur_n = weights.T @ mu
-      volat = np.sqrt(weights.T @ cov @ weights)
+      weights = mvp_alphas(i/10, mu, cov)
+      retur_n = (weights.T @ mu)*12
+      volat = (np.sqrt(weights.T @ cov @ weights))*12
       portfolio_returns.append(retur_n)
       portfolio_volatilities.append(volat)
    return portfolio_returns, portfolio_volatilities
 
-gen_pfl(lambdas, pct_change_mean, cov_excess)
+
+#First frontier :
+
 
 portfolio_returns = np.array(portfolio_returns)
 portfolio_volatilities = np.array(portfolio_volatilities)
@@ -214,19 +214,18 @@ weights_vec = np.array(weights_vec)
 
 portfolios_frt = pd.DataFrame({"Return": portfolio_returns, "Volatility": portfolio_volatilities})
 portfolios_frt.plot(x="Volatility", y="Return", kind="scatter", color="blue", s=4)
-plt.xlabel("Monthly Expected Volatility")
-plt.ylabel("Monthly Expected Return")
+plt.xlabel("Annual Expected Volatility")
+plt.ylabel("Annual Expected Return")
 plt.show()
 
 """
 # -----------------------------------------------------------------------------------------------------------------------
 # Question 3 -----------------------------------------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------------------------------------
-
 market_cap = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Market Cap").dropna()
 market_cap_nafree = market_cap.iloc[1::, 2::]
 
-lambdas = list(range(500, 5000))
+lambdas = list(range(50, 5000))
 
 def mvp_alphas(lambd, stocks, cov):
     cov_in = np.linalg.inv(cov)
@@ -237,18 +236,31 @@ def mvp_alphas(lambd, stocks, cov):
     C = ((e.T @ cov_in @ stocks)/(e.T @ cov_in @ e))*e
     D = stocks - C
     alpha = A + B*D
-    return alpha
+    return alpha[:,1]
 
 def gen_pfl(lambdas, mu, cov):
    for i in lambdas:
-      print(i)
       weights = mvp_alphas(i/100, mu, cov)
-      weights = weights[1]
-      retur_n = weights.T @ mu
-      volat = np.sqrt(weights.T @ cov @ weights)
+      weights = weights
+      retur_n = (weights.T @ mu)*12
+      volat = (np.sqrt(weights.T @ cov @ weights))*12
       portfolio_returns.append(retur_n)
       portfolio_volatilities.append(volat)
    return portfolio_returns, portfolio_volatilities
+
+def alpha_to_return(mu, cov, mu_tild):
+    cov_in = np.linalg.inv(cov)
+    e = np.ones((97, 1))
+    A = e.T @ cov_in @ mu
+    B = mu.T @ cov_in @ mu
+    C = e.T @ cov_in @ e
+    D = B * C - A**2
+    E = (cov_in/D) @ (B*e - A*mu)
+    F = (cov_in/D) @ (C*mu - A*e)
+    print(mu_tild)
+    final = E + F * mu_tild
+    return final
+
 
 # DATA CLEANING & Montly scaling :
 
@@ -258,6 +270,7 @@ market_cap_nafree = pd.DataFrame.resample(market_cap_nafree, "M").mean()
 stock = market_cap_nafree.pct_change()
 stock = stock.iloc[1:, :]
 cov_excess = stock.cov()
+covin = cov_excess
 pct_change_mean = np.mean(stock)
 pct_change_mean = np.array(pct_change_mean)
 cov_excess = np.array(cov_excess)
@@ -266,34 +279,85 @@ prtf_cov = []
 # Generate x -> Px new samples from the original distribution of mean "pct_change_mean, and variance
 # the diagonal of "cov_excess", and compute mean return and cov matrix of the new sample
 new_P = []
+e = np.ones((len(pct_change_mean), 1))
 
+# Mu from GMVP to speculative portfolio :
+
+mu_GMVP = ((e.T @ covin @ pct_change_mean) / (e.T @ covin @ e))
+mu_spec = ((covin @ pct_change_mean) / (e.T @ covin @ pct_change_mean))
+mu_iterator = np.linspace(mu_GMVP, mu_spec, 97)
+#gen_pfl(lambdas, pct_change_mean, cov_excess)
+
+for i in mu_iterator:
+    weights = alpha_to_return(pct_change_mean, cov_excess, i)
+    volatility = np.sqrt(np.dot(weights.T, np.dot(cov_excess,weights)))
+    prtf_mean.append(i)
+    prtf_cov.append(volatility)
+
+#Lists of storage for the monte-carlo simulations :
+
+MC_returns = []
+MC_volatility = []
+MC_weights = []
+
+Q = 100
+
+for q in range(Q):
+    prtf = pd.DataFrame(np.random.multivariate_normal(pct_change_mean, cov_excess, 275))
+    mu = prtf.mean()
+    cov = prtf.cov()
+
+    ret_q = []
+    vol_q = []
+    w_q = []
+    ret_t0 = []
+    vol_t0 = []
+
+    #EF for each simulation :
+    for i in mu_iterator:
+        weights = alpha_to_return(mu, cov, i)
+        volatility = np.sqrt(np.dot(weights.T, np.dot(cov, weights)))
+        ret_q.append(i)
+        vol_q.append(volatility)
+        w_q.append(w)
+        ret_t0.append(weights.T@pct_change_mean)
+        vol_t0.append((weights.T @ cov_excess @ weights)**0.5)
+
+    MC_returns.append(ret_q)
+    MC_volatility.append(vol_q)
+    MC_weights.append(w_q)
+
+plt.plot(vol_q, ret_q)
+plt.show()
+
+
+
+
+"""
 for i in range (100):
   print("Portfolio "+str(i)+"/100 Generated")
   for x in range (275): #replace 275 by the new period count if it is shifted to daily returns
     new_P.append(np.random.normal(pct_change_mean, np.diagonal(cov_excess)))
-  new_P=pd.DataFrame(new_P)
-  var = new_P.cov()
-  mean = new_P.mean(axis=0)
+  var = np.cov(np.transpose(new_P))
+  mean = np.mean(new_P, axis=0)
   prtf_mean.append(mean)
   prtf_cov.append(var)
   new_P = []
 
-print(pct_change_mean)
-print(cov_excess)
-#We now have 100 sample of normaly distributed returns
+#We now have 500 sample of normaly distributed returns
 #from the original data filled into prtf_mean and prtf_cov
 
 
 portfolio_returns = []
 portfolio_volatilities = []
 
-
-for x in range(100):
-    weights = mvp_alphas(100000, pct_change_mean, cov_excess)
-    weights = weights[1]
+for x in range(500):
+  print(x+"%")
+  for i in lambdas:
+    weights = mvp_alphas(i/10, prtf_mean[x], prtf_cov[x])
     portfolio_returns.append(np.sum(prtf_mean[x]*weights))
     portfolio_volatilities.append(np.sqrt(np.dot(weights.T, np.dot(prtf_cov[x],weights))))
-
+"""
 
 portfolio_returns = np.array(portfolio_returns)
 portfolio_volatilities = np.array(portfolio_volatilities).squeeze()
@@ -301,9 +365,9 @@ portfolio_volatilities = np.array(portfolio_volatilities).squeeze()
 plt.scatter(portfolio_volatilities,portfolio_returns, s=4, color ="blue")
 plt.xlabel("Expected Volatility")
 plt.ylabel("Expected Return")
-plt.xlim([0, 0.15])
-plt.ylim([0.975, 1.05])
 plt.show()
+
+
 
 # -----------------------------------------------------------------------------------------------------------------------
 # Question 4 -----------------------------------------------------------------------------------------------------------
