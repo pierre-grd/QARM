@@ -358,8 +358,8 @@ print_info("value weighted", VW_returns, cov_excess, VW_weight)
 # ---------------------------------------------------------------------------------------------------------------------
 # QUESTION 5 ---------------------------------------------------------------------------------------------------------
 # ---------------------------------------------------------------------------------------------------------------------
-
 """
+
 # Resample to the first 5 years / 60 months :
 market_cap = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Market Cap").dropna()
 market_cap_nafree = market_cap.iloc[1::, 2::]
@@ -494,14 +494,14 @@ print(print_info("Value weighted rolling window portfolio",saved_returns, cov_ex
 print(saved_returns)
 print(len(saved_returns))
 
-"""
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 # QUESTION 6------------------------------------------------------------------------------------------------------------
 # ---------------------------------------------------------------------------------------------------------------------
 # #the function under is written for positive weights only,
 # Resample to the first 5 years / 60 months :
-"""
+
 market_cap = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Market Cap").dropna()
 market_cap_nafree = market_cap.iloc[1::, 2::]
 market_cap_nafree = pd.DataFrame.transpose(market_cap_nafree)
@@ -580,7 +580,7 @@ for i in range(204):
     pct_change_mean = np.mean(stock)
     print(str(i)+"/203 monthly periods completed")
     alpha = return_min_var_alpha_POS(pct_change_mean,cov_excess)
-    alpha=alpha.x
+    alpha = alpha.x
     saved_returns.append(pct_change_mean * alpha)
     saved_covariances.append(np.sqrt(np.dot(alpha.T, np.dot(cov_excess, alpha))))
     saved_alphas.append(alpha)
@@ -640,6 +640,9 @@ print(print_info("Value weighted rolling window portfolio",saved_returns, cov_ex
 
 
 """
+
+
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 # QUESTION 7------------------------------------------------------------------------------------------------------------
@@ -770,6 +773,8 @@ print(print_info("Poos/b+ portfolio on 6 year rolling window GMVP",Poos_returns,
 #----------------------------------------------------------------------------------------------------------------------
 """
 
+
+"""
 co2 = pd.read_excel("Data QARM.xlsx", engine="openpyxl", sheet_name="CO2 Emissions")
 revenue = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Revenue")
 market_cap = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Market Cap").dropna()
@@ -806,26 +811,15 @@ Portfolio_value = 1000000
 #Reusing the initial minimal variance portfolio with positive weights
 """
 
+"""
 
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+# -------------------------------------------------------------------------------------
+# PART 2
+# -------------------------------------------------------------------------------------
 
 
 
