@@ -228,7 +228,7 @@ plt.show()
 # -----------------------------------------------------------------------------------------------------------------------
 # Question 3 -----------------------------------------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------------------------------------
-"""
+
 market_cap = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Market Cap").dropna()
 market_cap_nafree = market_cap.iloc[1::, 2::]
 
@@ -286,7 +286,7 @@ plt.ylabel("Expected Return")
 plt.xlim([0, 0.15])
 plt.ylim([0.975, 1.05])
 plt.show()
-"""
+
 # -----------------------------------------------------------------------------------------------------------------------
 # Question 4 -----------------------------------------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------------------------------------
@@ -681,7 +681,7 @@ for i in range(1,205):
     stock_t = market_cap_sixyear / market_cap_sixyear.shift(1)
     stock = stock_t.iloc[1:, :]
     pct_change_mean = np.mean(stock)
-    print(str(i)+"/203 monthly periods completed")
+    print(str(i)+"/204 monthly periods completed")
     alpha = return_min_var_alpha_POS(pct_change_mean,cov_excess)
     #alpha=alpha.x
     saved_returns.append(pct_change_mean * alpha)
@@ -703,7 +703,7 @@ for i in range(204):
     stock = stock.iloc[1:, :]
     cov_excess = stock.cov()
     pct_change_mean = np.mean(stock)
-    print(str(i)+"/203 monthly periods completed")
+    print(str(i)+"/204 monthly periods completed")
     alpha = equal_weight
     saved_returns.append(pct_change_mean * alpha)
     saved_covariances.append(np.sqrt(np.dot(alpha.T, np.dot(cov_excess, alpha))))
@@ -718,7 +718,7 @@ print(print_info("Value weighted rolling window portfolio",saved_returns, cov_ex
 # QUESTION 7------------------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------------------------
 
-
+"""
 # DATA taken
 co2 = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="CO2 Emissions")
 revenue = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Revenue")
@@ -764,7 +764,7 @@ pct_change_mean = np.mean(stock)
 print(pct_change_mean)
 
 
-def return_min_var_alpha_POS(mu, cov, gen=2000, sharesnumber=92):
+def return_min_var_alpha_POS(mu, cov, gen=5000, sharesnumber=92):
     portfolio_returns = []
     portfolio_volatilities = []
     weights_vec = []
@@ -822,6 +822,7 @@ alpha = np.full(92, 1)
 
 for i in range(1, 205):
     x = i - 1
+    
     market_cap_sixyear = market_cap_nafree.iloc[x:x + 72, :]
     stock = market_cap_sixyear / market_cap_sixyear.shift(1)
     stock = stock.iloc[1:, :]
@@ -831,7 +832,7 @@ for i in range(1, 205):
     stock_t = market_cap_sixyear / market_cap_sixyear.shift(1)
     stock = stock_t.iloc[1:, :]
     pct_change_mean = np.mean(stock)
-    #print(str(i) + "/204 monthly periods completed")
+    print(str(i) + "/204 monthly periods completed")
     alpha = return_min_var_alpha_POS(pct_change_mean, cov_excess)
     # alpha=alpha.x
     saved_returns.append(pct_change_mean * alpha)
@@ -972,7 +973,7 @@ for i in range(len(saved_returns)):
 print(len(saved_returns))
 print(print_info("Poos/b+(0.75) portfolio on 6 year rolling window GMVP", Poosb_returns, cov_excess,
                  saved_alphas_2[np.argmin(saved_covariances)]))
-
+"""
 # -------------------------------------------------------------------------------------
 # PART 2
 # -------------------------------------------------------------------------------------
