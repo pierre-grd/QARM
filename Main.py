@@ -764,7 +764,7 @@ pct_change_mean = np.mean(stock)
 print(pct_change_mean)
 
 
-def return_min_var_alpha_POS(mu, cov, gen=200, sharesnumber=92):
+def return_min_var_alpha_POS(mu, cov, gen=2000, sharesnumber=92):
     portfolio_returns = []
     portfolio_volatilities = []
     weights_vec = []
@@ -831,7 +831,7 @@ for i in range(1, 205):
     stock_t = market_cap_sixyear / market_cap_sixyear.shift(1)
     stock = stock_t.iloc[1:, :]
     pct_change_mean = np.mean(stock)
-    print(str(i) + "/204 monthly periods completed")
+    #print(str(i) + "/204 monthly periods completed")
     alpha = return_min_var_alpha_POS(pct_change_mean, cov_excess)
     # alpha=alpha.x
     saved_returns.append(pct_change_mean * alpha)
@@ -923,15 +923,8 @@ print(cf)
 
 # = 2.56
 # carbon footprint targeted = 1.92
-# reducing cf by 25 percent
 
-def ct():
-    return 1.96
-
-
-constraint = ({"type": "eq", "fun": ct()})
-
-# new_poos = scipy.optimize.minimize(total_CF(saved_alphas),saved_alphas,method="SLSQP", constraints=constraint)
+#Reducing the weight of stocks with the highest carbon intensity :
 
 saved_alphas = pd.DataFrame(saved_alphas)
 
@@ -968,7 +961,6 @@ for i in range(1, 204):
     stock = stock.iloc[1:, :]
     cov_excess = stock.cov()
     pct_change_mean = np.mean(stock)
-    print(str(i) + "/203 monthly periods completed")
     alpha = saved_alphas[i]
     saved_returns.append(pct_change_mean * alpha)
     saved_covariances.append(np.sqrt(np.dot(alpha.T, np.dot(cov_excess, alpha))))
@@ -977,7 +969,7 @@ for i in range(1, 204):
 Poosb_returns = []
 for i in range(len(saved_returns)):
     Poosb_returns.append(saved_returns[i].mean())
-
+print(len(saved_returns))
 print(print_info("Poos/b+(0.75) portfolio on 6 year rolling window GMVP", Poosb_returns, cov_excess,
                  saved_alphas_2[np.argmin(saved_covariances)]))
 
