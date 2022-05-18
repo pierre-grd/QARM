@@ -159,7 +159,12 @@ markret_cap_nafree_avgreturn_max = market_cap_nafree_avgreturn.max()
 # -----------------------------------------------------------------------------------------------------------------------
 # Question 2 -----------------------------------------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------------------------------------
-"""
+
+market_cap = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Market Cap").dropna()
+market_cap_nafree = market_cap.iloc[1::, 2::]
+
+# DATA CLEANING & Montly scaling :
+
 market_cap = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Market Cap").dropna()
 market_cap_nafree = market_cap.iloc[1::, 2::]
 
@@ -169,7 +174,7 @@ market_cap_nafree = pd.DataFrame.transpose(market_cap_nafree)
 market_cap_nafree.index = pd.to_datetime(market_cap_nafree.index)
 market_cap_nafree = pd.DataFrame.resample(market_cap_nafree, "M").mean()
 
-stock = market_cap_nafree / market_cap_nafree.shift(1)
+stock = market_cap_nafree.pct_change()
 stock = stock.iloc[1:, :]
 cov_excess = stock.cov()
 pct_change_mean = np.mean(stock)
@@ -178,42 +183,38 @@ portfolio_returns = []
 portfolio_volatilities = []
 weights_vec = []
 
-#NEGATIVE & POSITIVE WEIGHTS :
+stock_mu = pct_change_mean.shape[0]
+e = np.ones((stock_mu, 1))
+pct_change_mean = np.array(pct_change_mean)
+cov_excess = np.array(cov_excess)
+covin = np.linalg.inv(cov_excess)
 
-for x in range(500000):
-    weights = np.random.uniform(-1, 1, 97)
-    weights /= np.sum(weights)
-    portfolio_returns.append(np.sum(pct_change_mean * weights))
-    portfolio_volatilities.append(np.sqrt(np.dot(weights.T, np.dot(cov_excess, weights))))
-    weights_vec.append(weights)
+def mvp_alphas(lambd, stocks, cov):
+    cov_in = np.linalg.inv(cov)
+    stock_mu = stocks.shape[0]
+    e = np.ones((stock_mu, 1))
+    A = (cov_in @ e)/(e.T @ cov_in @ e)
+    B = (1/lambd) * cov_in
+    C = ((e.T @ cov_in @ stocks)/(e.T @ cov_in @ e))*e
+    D = stocks - C
+    alpha = A + B*D
+    return alpha[:,1]
 
-
-portfolio_returns = np.array(portfolio_returns)
-portfolio_volatilities = np.array(portfolio_volatilities)
-weights_vec = np.array(weights_vec)
-
-portfolios_frt = pd.DataFrame({"Return": portfolio_returns, "Volatility": portfolio_volatilities})
-portfolios_frt.plot(x="Volatility", y="Return", kind="scatter", color="blue", s=4)
-plt.xlabel("Monthly Expected Volatility")
-plt.xlim([0.05, 0.15])
-plt.ylim([0.975, 1.05])
-plt.ylabel("Monthly Expected Return")
-plt.show()
+lambdas = range(50,5000)
+e = np.ones((97, 1))
 
 
+def gen_pfl(lambdas, mu, cov):
+   for i in lambdas:
+      print(i)
+      weights = mvp_alphas(i/10, mu, cov)
+      retur_n = (weights.T @ mu)*12
+      volat = (np.sqrt(weights.T @ cov @ weights))*12
+      portfolio_returns.append(retur_n)
+      portfolio_volatilities.append(volat)
+   return portfolio_returns, portfolio_volatilities
 
-#POSITIVE WEIGHTS ONLY :
-
-portfolio_returns = []
-portfolio_volatilities = []
-weights_vec = []
-
-for x in range(50000):
-    weights = np.random.uniform(0,1,97)
-    weights /= np.sum(weights)
-    portfolio_returns.append(np.sum(pct_change_mean * weights))
-    portfolio_volatilities.append(np.sqrt(np.dot(weights.T, np.dot(cov_excess, weights))))
-    weights_vec.append(weights)
+gen_pfl(lambdas, pct_change_mean, cov_excess)
 
 portfolio_returns = np.array(portfolio_returns)
 portfolio_volatilities = np.array(portfolio_volatilities)
@@ -221,10 +222,11 @@ weights_vec = np.array(weights_vec)
 
 portfolios_frt = pd.DataFrame({"Return": portfolio_returns, "Volatility": portfolio_volatilities})
 portfolios_frt.plot(x="Volatility", y="Return", kind="scatter", color="blue", s=4)
-plt.xlabel("Monthly Expected Volatility")
-plt.ylabel("Monthly Expected Return")
+plt.xlabel("Annual Expected Volatility")
+plt.ylabel("Annual Expected Return")
 plt.show()
-"""
+
+
 # -----------------------------------------------------------------------------------------------------------------------
 # Question 3 -----------------------------------------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------------------------------------
@@ -238,7 +240,8 @@ market_cap_nafree = pd.DataFrame.transpose(market_cap_nafree)
 market_cap_nafree.index = pd.to_datetime(market_cap_nafree.index)
 market_cap_nafree = pd.DataFrame.resample(market_cap_nafree, "M").mean()
 
-stock = market_cap_nafree / market_cap_nafree.shift(1)
+#stock = market_cap_nafree / market_cap_nafree.shift(1)
+stock = market_cap_nafree.pct_change()
 stock = stock.iloc[1:, :]
 cov_excess = stock.cov()
 pct_change_mean = np.mean(stock)
@@ -250,9 +253,9 @@ prtf_cov = []
 new_P = []
 
 for i in range (1,500):
-  print("Portfolio "+str(i)+"/100 Generated")
+  print("Portfolio "+str(i)+"/500 Generated")
   for x in range (275): #replace 275 by the new period count if it is shifted to daily returns
-    new_P.append(np.random.normal(pct_change_mean, np.diagonal(cov_excess)))
+    new_P.append(np.random.multivariate_normal(pct_change_mean, cov_excess))
   new_P=pd.DataFrame(new_P)
   var = new_P.cov()
   mean = new_P.mean(axis=0)
@@ -273,8 +276,8 @@ for i in range(100):
  for x in range(499):
     weights = np.random.random(97)
     weights /= np.sum(weights)
-    portfolio_returns.append(np.sum(prtf_mean[x]*weights))
-    portfolio_volatilities.append(np.sqrt(np.dot(weights.T, np.dot(prtf_cov[x],weights))))
+    portfolio_returns.append(np.sum(prtf_mean[x]*weights)*12)
+    portfolio_volatilities.append(np.sqrt(np.dot(weights.T, np.dot(prtf_cov[x],weights)))*12)
 
 
 portfolio_returns = np.array(portfolio_returns)
@@ -283,8 +286,6 @@ portfolio_volatilities = np.array(portfolio_volatilities).squeeze()
 plt.scatter(portfolio_volatilities,portfolio_returns, s=4, color ="blue")
 plt.xlabel("Expected Volatility")
 plt.ylabel("Expected Return")
-plt.xlim([0, 0.15])
-plt.ylim([0.975, 1.05])
 plt.show()
 
 # -----------------------------------------------------------------------------------------------------------------------
