@@ -767,7 +767,7 @@ cov_excess = stock.cov()
 pct_change_mean = np.mean(stock)
 print(pct_change_mean)
 
-def return_min_var_alpha_POS(mu, cov, gen=500, sharesnumber = 92):
+def return_min_var_alpha_POS(mu, cov, gen=5000, sharesnumber = 92):
 
     portfolio_returns = []
     portfolio_volatilities = []
@@ -888,11 +888,15 @@ Portfolio_value = 1000000
 
 #Reusing the initial minimal variance portfolio with positive weights to find the values invesed in each companies :
 
+kap = merged_co2_cap.iloc[::,72::]
+#computes the carbon intensity for each month for the considered portfolio
 
-def Carbon_Footprint(values_in, Kap, value_total, carbon_intensity):
-    dv_portfolio = 1/value_total
-    for i in range(len(carbon_intensity)):
-        cf_1 = cf2 + (values_in[i]/Kap[i])*carbon_intensity[i]
+def Carbon_Footprint_t(Kap, carbon_intensity, weights, len = 92):
+    value = pct_change_mean*weights*Portfolio_value
+    dv_portfolio = 1/sum(value)
+    cf_2 = 0
+    for i in range(len):
+        cf_1 = cf_2 + (value.iloc[i]/Kap.iloc[i])*carbon_intensity.iloc[i]
         cf_2 = cf_1
     cf_out = dv_portfolio*cf_2
     return cf_out
@@ -902,12 +906,23 @@ print(pct_change_mean)
 values = pct_change_mean*np.mean(saved_alphas)*Portfolio_value
 print(sum(values))
 print(values)
-kap = np.mean(merged_co2_cap, axis = 1)
 print(kap)
-value_tt
-CF = Carbon_Footprint()
 
+def total_CF(kap, c_intensity, alphas):
+ CF_1 = 0
+ for i in range(203):
+    print(i)
+    CF = Carbon_Footprint_t(kap, c_intensity, alphas[i])
+    CF_1+=CF
+ return sum(CF_1)
 
+cf = total_CF(kap, c_intensity, saved_alphas)
+#Result of CF for POOs b+
+
+print(cf)
+
+#reducing cf by 25 percent
+scipy.optimize
 
 # -------------------------------------------------------------------------------------
 # PART 2
