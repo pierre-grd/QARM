@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import openpyxl
 import scipy.optimize
 import scipy.stats as sp
+import matplotlib.cm as cm
 
 """
 co_2 = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="CO2 Emissions")
@@ -159,7 +160,7 @@ markret_cap_nafree_avgreturn_max = market_cap_nafree_avgreturn.max()
 # -----------------------------------------------------------------------------------------------------------------------
 # Question 2 -----------------------------------------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------------------------------------
-
+"""
 market_cap = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Market Cap").dropna()
 market_cap_nafree = market_cap.iloc[1::, 2::]
 
@@ -214,14 +215,15 @@ def gen_pfl(lambdas, mu, cov):
       portfolio_volatilities.append(volat)
    return portfolio_returns, portfolio_volatilities
 
+print(pct_change_mean, cov_excess)
+
 gen_pfl(lambdas, pct_change_mean, cov_excess)
 
 portfolio_returns = np.array(portfolio_returns)
 portfolio_volatilities = np.array(portfolio_volatilities)
 weights_vec = np.array(weights_vec)
-
 portfolios_frt = pd.DataFrame({"Return": portfolio_returns, "Volatility": portfolio_volatilities})
-portfolios_frt.plot(x="Volatility", y="Return", kind="scatter", color="blue", s=4)
+portfolios_frt.plot(x="Volatility", y="Return", kind="scatter", color=cm.cool(30.0), s=4)
 plt.xlabel("Annual Expected Volatility")
 plt.ylabel("Annual Expected Return")
 plt.show()
@@ -251,9 +253,8 @@ prtf_cov = []
 # Generate x -> Px new samples from the original distribution of mean "pct_change_mean, and variance
 # the diagonal of "cov_excess", and compute mean return and cov matrix of the new sample
 new_P = []
-
-for i in range (1,500):
-  print("Portfolio "+str(i)+"/500 Generated")
+for i in range (1,300):
+  print("Portfolio "+str(i)+"/300 Generated")
   for x in range (275): #replace 275 by the new period count if it is shifted to daily returns
     new_P.append(np.random.multivariate_normal(pct_change_mean, cov_excess))
   new_P=pd.DataFrame(new_P)
@@ -263,35 +264,53 @@ for i in range (1,500):
   prtf_cov.append(var)
   new_P = []
 
+
 #We now have 100 sample of normaly distributed returns
 #from the original data filled into prtf_mean and prtf_cov
+portfolio_returns_2 = []
+portfolio_volatilities_2 = []
 
-prtf_mean = np.transpose(prtf_mean)
-prtf_mean = pd.DataFrame(prtf_mean)
+def gen_pfl(lambdas, mu, cov):
+   for i in lambdas:
+      print(i)
+      weights = mvp_alphas(i/10, mu, cov)
+      retur_n = (weights.T @ mu)*12
+      volat = (np.sqrt(weights.T @ cov @ weights))*12
+      portfolio_returns_2.append(retur_n)
+      portfolio_volatilities_2.append(volat)
+   return portfolio_returns, portfolio_volatilities
 
-portfolio_returns = []
-portfolio_volatilities = []
-
-for i in range(100):
- for x in range(499):
-    weights = np.random.random(97)
-    weights /= np.sum(weights)
-    portfolio_returns.append(np.sum(prtf_mean[x]*weights)*12)
-    portfolio_volatilities.append(np.sqrt(np.dot(weights.T, np.dot(prtf_cov[x],weights)))*12)
+#prtf_mean = np.transpose(prtf_mean)
+#prtf_mean = pd.DataFrame(prtf_mean)
 
 
-portfolio_returns = np.array(portfolio_returns)
-portfolio_volatilities = np.array(portfolio_volatilities).squeeze()
+#for i in range(100):
+ #for x in range(99):
+#    weights = np.random.random(97)
+ #   weights /= np.sum(weights)
+#    portfolio_returns.append(np.sum(prtf_mean[x]*weights)*12)
+#    portfolio_volatilities.append(np.sqrt(np.dot(weights.T, np.dot(cov_excess,weights)))*12)
 
-plt.scatter(portfolio_volatilities,portfolio_returns, s=4, color ="blue")
+prtf_mean = np.array(prtf_mean)
+prtf_mean = np.mean(prtf_mean, axis=0)
+print(prtf_mean)
+
+cov_excess = np.array(cov_excess)
+gen_pfl(lambdas, prtf_mean, cov_excess)
+
+portfolio_returns_2 = np.array(portfolio_returns_2)
+portfolio_volatilities_2 = np.array(portfolio_volatilities_2).squeeze()
+
+plt.scatter(portfolio_volatilities,portfolio_returns, s=4, color =cm.cool(30.0))
+plt.scatter(portfolio_volatilities_2, portfolio_returns_2, s=4, color=cm.hsv(30.0))
 plt.xlabel("Expected Volatility")
 plt.ylabel("Expected Return")
 plt.show()
-
+"""
 # -----------------------------------------------------------------------------------------------------------------------
 # Question 4 -----------------------------------------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------------------------------------
-"""
+
 market_cap = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Market Cap").dropna()
 market_cap_nafree = market_cap.iloc[1::, 2::]
 market_cap_nafree = pd.DataFrame.transpose(market_cap_nafree)
@@ -343,6 +362,8 @@ def ES(r, cov, alpha=1):
     CVaR_n = alpha ** -1 * sp.norm.pdf(sp.norm.ppf(alpha)) * cov - r
     return CVaR_n
 
+return_min_var_alpha_POSNEG(pct_change_mean,cov_excess)
+
 min = np.min(portfolio_volatilities)
 index_min = np.argmin(portfolio_volatilities)
 
@@ -350,7 +371,6 @@ print("The GMVP has an annualized volatility of " + str(min * 12))
 print("GMVP Annualized average return is : " + str((np.mean(portfolio_returns[index_min]) - 1) * 12))
 
 stock_for_mv = weights_vec[index_min] * stock
-
 stock_for_mv = pd.DataFrame.mean(stock_for_mv, axis=1)
 print("GMV portfolio MIN ANN Return: " + str(pd.DataFrame.min(stock_for_mv) * 12))
 print("GMV portfolio MAX ANN Return : " + str(pd.DataFrame.max(stock_for_mv) * 12))
@@ -390,7 +410,7 @@ def print_info(prtf_name, returns, cov, weights, period=12):
 
 
 print_info("value weighted", VW_returns, cov_excess, VW_weight)
-"""
+
 # ---------------------------------------------------------------------------------------------------------------------
 # QUESTION 5 ---------------------------------------------------------------------------------------------------------
 # ---------------------------------------------------------------------------------------------------------------------
