@@ -3,8 +3,11 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import openpyxl
-import scipy.optimize
+import scipy.optimize as spop
 import scipy.stats as sp
+import arch
+from arch import arch_model
+from arch.univariate import ARCH, GARCH, Normal
 
 """
 co_2 = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="CO2 Emissions")
@@ -683,8 +686,8 @@ print(print_info("Value weighted rolling window portfolio",saved_returns, cov_ex
 # QUESTION 7------------------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------------------------
 
-"""
 
+"""
 #DATA taken
 co2 = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="CO2 Emissions")
 revenue = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Revenue")
@@ -705,9 +708,23 @@ c_intensity = co2/revenue
 c_intensity = c_intensity.dropna()
 print(c_intensity)
 
+c_intensity_mean = c_intensity.mean()
+c_intensity_std = np.std(c_intensity)
+c_intensity_min = c_intensity.min()
+c_intensity_max = c_intensity.max()
+
+"""
+"""
+print(c_intensity_mean)
+print(c_intensity_std)
+print(c_intensity_min)
+print(c_intensity_max)
+
+
+"""
 #portfolio with positive weights with only those with a carbon intensity surveyed (Poos/b+) :
 
-
+"""
 market_cap = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Market Cap").dropna()
 market_cap_nafree = market_cap.iloc[1::, 2::]
 market_cap_nafree = pd.DataFrame.transpose(market_cap_nafree)
@@ -859,6 +876,7 @@ Portfolio_value = 1000000
 # ----------------------------------------------------------------------------------------------------------------------
 
 
+
 #DATA For carbon intensity
 
 co2 = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="CO2 Emissions")
@@ -984,61 +1002,127 @@ daily_returns = []
 daily_vol = []
 total_return = []
 
-for i in range (30,4000):
+for i in range (20,4000):
     print(i)
-    returns = stock.iloc[i,:] @ saved_alphas[int((i/30)-1)]
-    total_return.append(np.multiply(stock.iloc[i,:],saved_alphas[int((i/30)-1)]))
+    returns = stock.iloc[i,:] @ saved_alphas[int((i/20)-1)]
+    total_return.append(np.multiply(stock.iloc[i,:],saved_alphas[int((i/20)-1)]))
     daily_returns.append(returns)
-    vol = saved_alphas[int((i/30))-1] @ saved_covs[int((i/30))-1] @ saved_alphas[int((i/30))-1]
+    vol = saved_alphas[int((i/20))-1] @ saved_covs[int((i/20))-1] @ saved_alphas[int((i/20))-1]
     daily_vol.append(vol)
 
 
-#LE TRUC POUR LE Pédé est ci dessous :
-print(returns)
-#NON, c'est au dessus
 
 
 #print(print_info("Poos/b+ portfolio on 6 year rolling window GMVP (daily returns)",Poos_returns,cov_excess, saved_alphas[np.argmin(saved_covariances)]))
 
 
-
-
-
+"""
 
 # ----------------------------------------------------------------------------------------------------------------------
 # QUESTION 2  -------------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------------------------
 
-# Historical simulation approach : use our alpha ( weights vector) to find our portfolio returns on a daily frequency.
-# Sort all returns in descending order then find 95% percentile
+
+# Finding the VaR
+
+daily_returns_sorted = daily_returns.sort()
+df_D_returns = pd.DataFrame (daily_returns, columns = ['Daily Returns'])
 
 
 
+def Daily_return_index_number(a):
+    return a * len(df_D_returns.index)
+"print(Daily_return_index_number(0.01))"
+
+# Values per IC : 90% = 298 ; 95% = 199 ; 99% = 40
+
+
+VAR_90 = df_D_returns.iloc[298]
+VaR_95 = df_D_returns.iloc[199]
+VaR_99 = df_D_returns.iloc[40]
 
 
 
+print(VAR_90)
+print(VaR_95)
+print(VaR_99)
 
+# Calculating the Expected short fall : Definition = mean of the tail of the distribution
 
-
-
-
-
-
-
-
-
+pool_90 = df_D_returns.iloc[0:298]
+ES_90 = pool_90.mean(axis=0)
+"print(ES_90)"
+pool_95 = df_D_returns.iloc[0:199]
+ES_95 = pool_95.mean(axis=0)
+"print(ES_95)"
+pool_99 = df_D_returns.iloc[0:40]
+ES_99 = pool_99.mean(axis=0)
+"print(ES_99)"
+"""
 
 # ----------------------------------------------------------------------------------------------------------------------
 # QUESTION 3  -------------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------------------------
 
 
+"""
+mean = np.average(stock)
+var = np.std(stock)
+"""
+"""
+def garch_mle(params):
+    #specifying model parameters
+    mu = params[0]
+    omega = params[1]
+    alpha = params[2]
+    beta = params[3]
+    #calculating long-run volatility
+    long_run = (omega/(1 - alpha - beta))**(1/2)
+    #calculating realised and conditional volatility
+    resid = stock - mu
+    realised = abs(resid)
+    conditional = np.zeros(len(stock))
+    conditional[0] =  long_run
+    for t in range(1,len(stock)):
+        conditional[t] = (omega + alpha*resid[t-1]**2 + beta*conditional[t-1]**2)**(1/2)
+    #calculating log-likelihood
+    likelihood = 1/((2*np.pi)**(1/2)*conditional)*np.exp(-realised**2/(2*conditional**2))
+    log_likelihood = np.sum(np.log(likelihood))
+    return -log_likelihood
+#maximising log-likelihood
+res = spop.minimize(garch_mle, [1.001862096787532, , 0, 0], method='Nelder-Mead')
+#retrieving optimal parameters
+params = res.x
+mu = res.x[0]
+omega = res.x[1]
+alpha = res.x[2]
+beta = res.x[3]
+log_likelihood = -float(res.fun)
+#calculating realised and conditional volatility for optimal parameters
+long_run = (omega/(1 - alpha - beta))**(1/2)
+resid = stock - mu
+realised = abs(resid)
+conditional = np.zeros(len(stock))
+conditional[0] =  long_run
+for t in range(1,len(stock)):
+    conditional[t] = (omega + alpha*resid[t-1]**2 + beta*conditional[t-1]**2)**(1/2)
+#printing optimal parameters
+print('GARCH model parameters')
+print('')
+print('mu '+str(round(mu, 6)))
+print('omega '+str(round(omega, 6)))
+print('alpha '+str(round(alpha, 4)))
+print('beta '+str(round(beta, 4)))
+print('long-run volatility '+str(round(long_run, 4)))
+print('log-likelihood '+str(round(log_likelihood, 4)))
+#visualising the results
+plt.figure(1)
+plt.rc('xtick', labelsize = 10)
+plt.plot(prices.index[1:],realised)
+plt.plot(prices.index[1:],conditional)
+plt.show()
 
-
-
-
-
-
+"""
 
 
 
