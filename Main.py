@@ -6,7 +6,9 @@ import openpyxl
 import scipy.optimize
 import scipy.stats as sp
 import matplotlib.cm as cm
-
+import arch
+from arch import arch_model
+from arch.univariate import ARCH, GARCH, Normal
 
 # !!!!!!!!!  CHUNKS TO BE RUN AT THE SAME TIME !!!!!!!!!!!!!!! :
 #in order to control the results of the computation, and the computation time, we separated with """ - """ the chunks
@@ -981,7 +983,7 @@ print(print_info("Poos/b+(0.75) portfolio on 6 year rolling window GMVP", Poosb_
 # ----------------------------------------------------------------------------------------------------------------------
 # QUESTION 1   -------------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------------------------
-"""
+
 
 #DATA For carbon intensity
 
@@ -1122,16 +1124,64 @@ print(returns)
 
 print(print_info("Poos/b+ portfolio on 6 year rolling window GMVP (daily returns)",returns,cov_excess, saved_alphas[np.argmin(saved_covariances)]))
 
-"""
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 # QUESTION 2  -------------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------------------------
+# Finding the VaR
+
+daily_returns_sorted = daily_returns.sort()
+df_D_returns = pd.DataFrame (daily_returns, columns = ['Daily Returns'])
+
+
+
+def Daily_return_index_number(a):
+    return a * len(df_D_returns.index)
+"print(Daily_return_index_number(0.01))"
+
+# Values per IC : 90% = 298 ; 95% = 199 ; 99% = 40
+
+
+VAR_90 = df_D_returns.iloc[298]
+VaR_95 = df_D_returns.iloc[199]
+VaR_99 = df_D_returns.iloc[40]
+
+
+
+print(VAR_90)
+print(VaR_95)
+print(VaR_99)
+
+# Calculating the Expected short fall : Definition = mean of the tail of the distribution
+
+pool_90 = df_D_returns.iloc[0:298]
+ES_90 = pool_90.mean(axis=0)
+"print(ES_90)"
+pool_95 = df_D_returns.iloc[0:199]
+ES_95 = pool_95.mean(axis=0)
+"print(ES_95)"
+pool_99 = df_D_returns.iloc[0:40]
+ES_99 = pool_99.mean(axis=0)
+"print(ES_99)"
+
 
 
 # ----------------------------------------------------------------------------------------------------------------------
 # QUESTION 3  -------------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------------------------
+
+# fitting the model using a GARCH(1,1)
+
+am = arch_model(dail_returns,p=1,q=1, dist= "skewt",rescale='false')
+garch_output = am.fit(disp='off')
+garch_output.summary()
+print(garch_output)
+
+
+
+# use : omega = 1.9743e-05 , alpha = 0.05 , beta = 0.93
+# volatility = omega + aplha*residu au carré t-1 + beta * variance from previous period
 
 
 # ----------------------------------------------------------------------------------------------------------------------
