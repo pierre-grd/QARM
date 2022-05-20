@@ -1214,7 +1214,7 @@ Christoffersen_test =
 # ----------------------------------------------------------------------------------------------------------------------
 # QUESTION 1  Requires to run qst 8 in the first place ------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------------------------
-
+"""
 co2 = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="CO2 Emissions")
 revenue = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Revenue")
 
@@ -1390,3 +1390,4 @@ ES_95 = pool_95.mean(axis=0)
 pool_99 = df_D_returns.iloc[0:40]
 ES_99 = pool_99.mean(axis=0)
 "print(ES_99)"
+"""
