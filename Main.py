@@ -1001,6 +1001,7 @@ for i in range(len(saved_returns)):
 print(print_info("Poos/b+(0.75) portfolio on 6 year rolling window GMVP", Poosb_returns, cov_excess,
                  saved_alphas_2[np.argmin(saved_covariances)]))
 """
+
 # -------------------------------------------------------------------------------------
 # PART 2
 # -------------------------------------------------------------------------------------
@@ -1008,7 +1009,6 @@ print(print_info("Poos/b+(0.75) portfolio on 6 year rolling window GMVP", Poosb_
 # ----------------------------------------------------------------------------------------------------------------------
 # QUESTION 1   -------------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------------------------
-
 
 #DATA For carbon intensity
 
@@ -1032,7 +1032,7 @@ c_intensity = c_intensity.dropna()
 print(c_intensity)
 
 #portfolio with positive weights with only those with a carbon intensity surveyed (Poos/b+) :
-
+"""
 
 market_cap = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Market Cap").dropna()
 market_cap_nafree = market_cap.iloc[1::, 2::]
@@ -1044,15 +1044,12 @@ market_cap_nafree = market_cap_nafree.T
 merged_co2_cap = market_cap_nafree.merge(c_intensity, left_index = True, right_index = True)
 market_cap_nafree = merged_co2_cap.iloc[::,0:276]
 market_cap_nafree = market_cap_nafree.T
-# pct_change = market_cap_nafree.pct_change(axis=0)
-# pct_change = pct_change.iloc[1:,:]
-# pct_change_mean = np.mean(pct_change, axis=0)
 stock = market_cap_nafree / market_cap_nafree.shift(1)
 stock = stock.iloc[1:, :]
 cov_excess = stock.cov()
 pct_change_mean = np.mean(stock)
 
-def return_min_var_alpha_POS(mu, cov, gen=2000, sharesnumber = 92):
+def return_min_var_alpha_POS(mu, cov, gen=200, sharesnumber = 92):
 
     portfolio_returns = []
     portfolio_volatilities = []
@@ -1117,9 +1114,8 @@ for i in range(204):
     saved_alphas.append(alpha)
     saved_covs.append(cov_excess)
 
-#print(print_info("First 6 year out of sample GMVP",saved_returns[0],saved_covariances[0], saved_alphas[0]))
-Poos_returns = []
-
+print_info("First 6 year out of sample GMVP",saved_returns[0],saved_covariances[0], saved_alphas[0])
+"""
 #New importation of the daily returns, and reducing the set of those with a carbon intensity
 
 market_cap = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Market Cap").dropna()
@@ -1127,13 +1123,17 @@ market_cap_nafree = market_cap.iloc[1::, 2::]
 merged_co2_cap = market_cap_nafree.merge(c_intensity, left_index = True, right_index = True)
 market_cap_nafree = merged_co2_cap.iloc[::,0:6001]
 market_cap_nafree = market_cap_nafree.T
+print(market_cap_nafree)
 stock = market_cap_nafree / market_cap_nafree.shift(1)
+print(stock)
 stock = stock.iloc[1:, :]
-cov_excess = stock.cov()
+print(stock)
+cov_excess = np.cov(stock)
 pct_change_mean = np.mean(stock)
 daily_returns = []
 daily_vol = []
 total_return = []
+print(stock)
 
 for i in range (20,4000):
     print(i)
@@ -1144,11 +1144,7 @@ for i in range (20,4000):
     daily_vol.append(vol)
 
 
-
-print(daily_vol)
-
-
-"""print(print_info("Poos/b+ portfolio on 6 year rolling window GMVP (daily returns)",returns,cov_excess, saved_alphas[np.argmin(saved_covariances)]))"""
+print(print_info("Poos/b+ portfolio on 6 year rolling window GMVP (daily returns)",daily_returns,cov_excess, saved_alphas[np.argmin(saved_covariances)]))
 
 
 
@@ -1161,19 +1157,15 @@ print(daily_vol)
 daily_returns_sorted = daily_returns.sort()
 df_D_returns = pd.DataFrame (daily_returns, columns = ['Daily Returns'])
 
-
-
 def Daily_return_index_number(a):
     return a * len(df_D_returns.index)
 "print(Daily_return_index_number(0.01))"
 
 # Values per IC : 90% = 298 ; 95% = 199 ; 99% = 40
 
-
 VAR_90 = df_D_returns.iloc[298]
 VaR_95 = df_D_returns.iloc[199]
 VaR_99 = df_D_returns.iloc[40]
-
 
 
 print(VAR_90)
@@ -1195,24 +1187,23 @@ ES_99 = pool_99.mean(axis=0)
 # ----------------------------------------------------------------------------------------------------------------------
 # QUESTION 3  -------------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------------------------
+#Estimating the data generating process using a GARCH(1,1) model :
 
-
-
-am = arch_model(dail_returns,p=1,q=1, dist= "skewt",rescale='false')
+am = arch_model(daily_returns,p=1,q=1, vol="GARCH")
 garch_output = am.fit(disp='off')
 garch_output.summary()
 print(garch_output)
 
+# DGT test for adequacy of the model on alpha and beta :
 
-
-# use : omega = 1.9743e-05 , alpha = 0.05 , beta = 0.93
-# volatility = omega + aplha*residu au carré t-1 + beta * variance from previous period
 
 
 
 # ----------------------------------------------------------------------------------------------------------------------
 # QUESTION 4   -------------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------------------------
+
+#using package vartests to implement the Christoffersen duration test :
 """
 Christoffersen_test = 
 """
