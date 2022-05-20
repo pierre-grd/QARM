@@ -1,4 +1,6 @@
 import os
+from typing import Any, Union, Tuple
+
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -314,7 +316,7 @@ plt.show()
 # -----------------------------------------------------------------------------------------------------------------------
 # Question 4 -----------------------------------------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------------------------------------
-
+"""
 market_cap = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Market Cap").dropna()
 market_cap_nafree = market_cap.iloc[1::, 2::]
 market_cap_nafree = pd.DataFrame.transpose(market_cap_nafree)
@@ -414,7 +416,7 @@ def print_info(prtf_name, returns, cov, weights, period=12):
 
 
 print_info("value weighted", VW_returns, cov_excess, VW_weight)
-
+"""
 # ---------------------------------------------------------------------------------------------------------------------
 # QUESTION 5 ---------------------------------------------------------------------------------------------------------
 # ---------------------------------------------------------------------------------------------------------------------
@@ -1024,7 +1026,7 @@ print(print_info("Poos/b+(0.75) portfolio on 6 year rolling window GMVP", Poosb_
 # ----------------------------------------------------------------------------------------------------------------------
 # QUESTION 1   -------------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------------------------
-"""
+
 
 
 #DATA For carbon intensity
@@ -1069,7 +1071,7 @@ stock = stock.iloc[1:, :]
 cov_excess = stock.cov()
 pct_change_mean = np.mean(stock)
 
-def return_min_var_alpha_POS(mu, cov, gen=200, sharesnumber = 92):
+def return_min_var_alpha_POS(mu, cov, gen=2000, sharesnumber = 92):
 
     portfolio_returns = []
     portfolio_volatilities = []
@@ -1162,19 +1164,19 @@ for i in range (20,4000):
 
 
 
-print(returns)
+print(daily_vol)
 
 
-print(print_info("Poos/b+ portfolio on 6 year rolling window GMVP (daily returns)",returns,cov_excess, saved_alphas[np.argmin(saved_covariances)]))
+"""print(print_info("Poos/b+ portfolio on 6 year rolling window GMVP (daily returns)",returns,cov_excess, saved_alphas[np.argmin(saved_covariances)]))"""
 
 
-"""
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 # QUESTION 2  -------------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------------------------
 
-
+"""
 
 # Finding the VaR
 
@@ -1218,74 +1220,17 @@ ES_99 = pool_99.mean(axis=0)
 # QUESTION 3  -------------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------------------------
 
+#calculate GARCH(1,1)
 
-
-"""
-mean = np.average(stock)
-var = np.std(stock)
-"""
-"""
-def garch_mle(params):
-    #specifying model parameters
-    mu = params[0]
-    omega = params[1]
-    alpha = params[2]
-    beta = params[3]
-    #calculating long-run volatility
-    long_run = (omega/(1 - alpha - beta))**(1/2)
-    #calculating realised and conditional volatility
-    resid = stock - mu
-    realised = abs(resid)
-    conditional = np.zeros(len(stock))
-    conditional[0] =  long_run
-    for t in range(1,len(stock)):
-        conditional[t] = (omega + alpha*resid[t-1]**2 + beta*conditional[t-1]**2)**(1/2)
-    #calculating log-likelihood
-    likelihood = 1/((2*np.pi)**(1/2)*conditional)*np.exp(-realised**2/(2*conditional**2))
-    log_likelihood = np.sum(np.log(likelihood))
-    return -log_likelihood
-#maximising log-likelihood
-res = spop.minimize(garch_mle, [1.001862096787532, , 0, 0], method='Nelder-Mead')
-#retrieving optimal parameters
-params = res.x
-mu = res.x[0]
-omega = res.x[1]
-alpha = res.x[2]
-beta = res.x[3]
-log_likelihood = -float(res.fun)
-#calculating realised and conditional volatility for optimal parameters
-long_run = (omega/(1 - alpha - beta))**(1/2)
-resid = stock - mu
-realised = abs(resid)
-conditional = np.zeros(len(stock))
-conditional[0] =  long_run
-for t in range(1,len(stock)):
-    conditional[t] = (omega + alpha*resid[t-1]**2 + beta*conditional[t-1]**2)**(1/2)
-#printing optimal parameters
-print('GARCH model parameters')
-print('')
-print('mu '+str(round(mu, 6)))
-print('omega '+str(round(omega, 6)))
-print('alpha '+str(round(alpha, 4)))
-print('beta '+str(round(beta, 4)))
-print('long-run volatility '+str(round(long_run, 4)))
-print('log-likelihood '+str(round(log_likelihood, 4)))
-#visualising the results
-plt.figure(1)
-plt.rc('xtick', labelsize = 10)
-plt.plot(prices.index[1:],realised)
-plt.plot(prices.index[1:],conditional)
-plt.show()
-
-"""
+am = arch_model(dail_returns,p=1,q=1, dist= "skewt",rescale='false')
+garch_output = am.fit(disp='off')
+garch_output.summary()
+print(garch_output)
 
 
 
-
-
-
-
-
+# use : omega = 1.9743e-05 , alpha = 0.05 , beta = 0.93
+# volatility = omega + aplha*residu au carré t-1 + beta * variance from previous period
 
 
 
@@ -1294,3 +1239,6 @@ plt.show()
 # ----------------------------------------------------------------------------------------------------------------------
 # QUESTION 4   -------------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------------------------
+"""
+Christoffersen_test = 
+"""
