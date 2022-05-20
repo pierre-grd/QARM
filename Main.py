@@ -1,14 +1,20 @@
 import os
+from typing import Any, Union, Tuple
+
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import openpyxl
-import scipy.optimize
+import scipy.optimize as spop
 import scipy.stats as sp
+import arch
+from arch import arch_model
+from arch.univariate import ARCH, GARCH, Normal
 import matplotlib.cm as cm
 import arch
 from arch import arch_model
 from arch.univariate import ARCH, GARCH, Normal
+
 
 # !!!!!!!!!  CHUNKS TO BE RUN AT THE SAME TIME !!!!!!!!!!!!!!! :
 #in order to control the results of the computation, and the computation time, we separated with """ - """ the chunks
@@ -19,6 +25,7 @@ from arch.univariate import ARCH, GARCH, Normal
 #Question 5
 #Question 6 & 7 & 8
 #Part 2 : to be run from Question 8 of part 1 until the end
+
 
 """
 co_2 = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="CO2 Emissions")
@@ -727,9 +734,11 @@ print(print_info("Value weighted rolling window portfolio",saved_returns, cov_ex
 # ----------------------------------------------------------------------------------------------------------------------
 # QUESTION 7------------------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------------------------
+
 """
 
 # DATA taken
+
 co2 = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="CO2 Emissions")
 revenue = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Revenue")
 
@@ -749,9 +758,25 @@ c_intensity = co2 / revenue
 c_intensity = c_intensity.dropna()
 print(c_intensity)
 
-# portfolio with positive weights with only those with a carbon intensity surveyed (Poos/b+) :
+
+c_intensity_mean = c_intensity.mean()
+c_intensity_std = np.std(c_intensity)
+c_intensity_min = c_intensity.min()
+c_intensity_max = c_intensity.max()
+
+"""
+"""
+print(c_intensity_mean)
+print(c_intensity_std)
+print(c_intensity_min)
+print(c_intensity_max)
 
 
+"""
+#portfolio with positive weights with only those with a carbon intensity surveyed (Poos/b+) :
+
+
+"""
 market_cap = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Market Cap").dropna()
 market_cap_nafree = market_cap.iloc[1::, 2::]
 market_cap_nafree = pd.DataFrame.transpose(market_cap_nafree)
@@ -1027,7 +1052,7 @@ stock = stock.iloc[1:, :]
 cov_excess = stock.cov()
 pct_change_mean = np.mean(stock)
 
-def return_min_var_alpha_POS(mu, cov, gen=200, sharesnumber = 92):
+def return_min_var_alpha_POS(mu, cov, gen=2000, sharesnumber = 92):
 
     portfolio_returns = []
     portfolio_volatilities = []
@@ -1110,19 +1135,21 @@ daily_returns = []
 daily_vol = []
 total_return = []
 
-for i in range (30,4000):
+for i in range (20,4000):
     print(i)
-    returns = stock.iloc[i,:] @ saved_alphas[int((i/30)-1)]
-    total_return.append(np.multiply(stock.iloc[i,:],saved_alphas[int((i/30)-1)]))
+    returns = stock.iloc[i,:] @ saved_alphas[int((i/20)-1)]
+    total_return.append(np.multiply(stock.iloc[i,:],saved_alphas[int((i/20)-1)]))
     daily_returns.append(returns)
-    vol = saved_alphas[int((i/30))-1] @ saved_covs[int((i/30))-1] @ saved_alphas[int((i/30))-1]
+    vol = saved_alphas[int((i/20))-1] @ saved_covs[int((i/20))-1] @ saved_alphas[int((i/20))-1]
     daily_vol.append(vol)
 
 
-print(returns)
+
+print(daily_vol)
 
 
-print(print_info("Poos/b+ portfolio on 6 year rolling window GMVP (daily returns)",returns,cov_excess, saved_alphas[np.argmin(saved_covariances)]))
+"""print(print_info("Poos/b+ portfolio on 6 year rolling window GMVP (daily returns)",returns,cov_excess, saved_alphas[np.argmin(saved_covariances)]))"""
+
 
 
 
@@ -1165,13 +1192,11 @@ pool_99 = df_D_returns.iloc[0:40]
 ES_99 = pool_99.mean(axis=0)
 "print(ES_99)"
 
-
-
 # ----------------------------------------------------------------------------------------------------------------------
 # QUESTION 3  -------------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------------------------
 
-# fitting the model using a GARCH(1,1)
+
 
 am = arch_model(dail_returns,p=1,q=1, dist= "skewt",rescale='false')
 garch_output = am.fit(disp='off')
@@ -1184,6 +1209,10 @@ print(garch_output)
 # volatility = omega + aplha*residu au carré t-1 + beta * variance from previous period
 
 
+
 # ----------------------------------------------------------------------------------------------------------------------
 # QUESTION 4   -------------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------------------------
+"""
+Christoffersen_test = 
+"""
