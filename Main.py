@@ -762,18 +762,17 @@ c_intensity_std = np.std(c_intensity)
 c_intensity_min = c_intensity.min()
 c_intensity_max = c_intensity.max()
 
-"""
-"""
+
 print(c_intensity_mean)
 print(c_intensity_std)
 print(c_intensity_min)
 print(c_intensity_max)
 
 
-"""
+
 #portfolio with positive weights with only those with a carbon intensity surveyed (Poos/b+) :
 
-
+"""
 """
 market_cap = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Market Cap").dropna()
 market_cap_nafree = market_cap.iloc[1::, 2::]
@@ -1142,21 +1141,21 @@ for i in range (20,4000):
     vol = saved_alphas[int((i/20))-1] @ saved_covs[int((i/20))-1] @ saved_alphas[int((i/20))-1]
     daily_vol.append(vol)
 
-
+"""
 
 print(daily_vol)
 
 
-"""print(print_info("Poos/b+ portfolio on 6 year rolling window GMVP (daily returns)",returns,cov_excess, saved_alphas[np.argmin(saved_covariances)]))"""
+print(print_info("Poos/b+ portfolio on 6 year rolling window GMVP (daily returns)",returns,cov_excess, saved_alphas[np.argmin(saved_covariances)]))
 
 
-
+"""
 
 # ----------------------------------------------------------------------------------------------------------------------
 # QUESTION 2  -------------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------------------------
 
-"""
+
 
 # Finding the VaR
 
@@ -1177,23 +1176,23 @@ VaR_95 = df_D_returns.iloc[199]
 VaR_99 = df_D_returns.iloc[40]
 
 
-
+"""
 print(VAR_90)
 print(VaR_95)
 print(VaR_99)
-
+"""
 # Calculating the Expected short fall : Definition = mean of the tail of the distribution
 
 pool_90 = df_D_returns.iloc[0:298]
 ES_90 = pool_90.mean(axis=0)
-"print(ES_90)"
+print(ES_90)
 pool_95 = df_D_returns.iloc[0:199]
 ES_95 = pool_95.mean(axis=0)
-"print(ES_95)"
+print(ES_95)
 pool_99 = df_D_returns.iloc[0:40]
 ES_99 = pool_99.mean(axis=0)
-"print(ES_99)"
-"""
+print(ES_99)
+
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -1201,7 +1200,7 @@ ES_99 = pool_99.mean(axis=0)
 # ----------------------------------------------------------------------------------------------------------------------
 
 #calculate GARCH(1,1)
-
+"""
 am = arch_model(dail_returns,p=1,q=1, dist= "skewt",rescale='false')
 garch_output = am.fit(disp='off')
 garch_output.summary()
@@ -1219,6 +1218,5 @@ print(garch_output)
 # ----------------------------------------------------------------------------------------------------------------------
 # QUESTION 4   -------------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------------------------
-"""
 Christoffersen_test = 
 """
