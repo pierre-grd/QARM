@@ -7,6 +7,17 @@ import scipy.optimize
 import scipy.stats as sp
 import matplotlib.cm as cm
 
+
+# !!!!!!!!!  CHUNKS TO BE RUN AT THE SAME TIME !!!!!!!!!!!!!!! :
+#in order to control the results of the computation, and the computation time, we separated with """ - """ the chunks
+# of code that can be run separately from each other's
+#QUESTION 1
+#Question 2 & 3
+#Question 4
+#Question 5
+#Question 6 & 7 & 8
+#Part 2 : to be run from Question 8 of part 1 until the end
+
 """
 co_2 = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="CO2 Emissions")
 market_cap = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Market Cap").dropna()
@@ -251,7 +262,6 @@ pct_change_mean = np.mean(stock)
 prtf_mean = []
 prtf_cov = []
 # Generate x -> Px new samples from the original distribution of mean "pct_change_mean, and variance
-# the diagonal of "cov_excess", and compute mean return and cov matrix of the new sample
 new_P = []
 for i in range (1,300):
   print("Portfolio "+str(i)+"/300 Generated")
@@ -265,8 +275,9 @@ for i in range (1,300):
   new_P = []
 
 
-#We now have 100 sample of normaly distributed returns
+#We now have 300 sample of normaly distributed returns
 #from the original data filled into prtf_mean and prtf_cov
+
 portfolio_returns_2 = []
 portfolio_volatilities_2 = []
 
@@ -280,16 +291,6 @@ def gen_pfl(lambdas, mu, cov):
       portfolio_volatilities_2.append(volat)
    return portfolio_returns, portfolio_volatilities
 
-#prtf_mean = np.transpose(prtf_mean)
-#prtf_mean = pd.DataFrame(prtf_mean)
-
-
-#for i in range(100):
- #for x in range(99):
-#    weights = np.random.random(97)
- #   weights /= np.sum(weights)
-#    portfolio_returns.append(np.sum(prtf_mean[x]*weights)*12)
-#    portfolio_volatilities.append(np.sqrt(np.dot(weights.T, np.dot(cov_excess,weights)))*12)
 
 prtf_mean = np.array(prtf_mean)
 prtf_mean = np.mean(prtf_mean, axis=0)
@@ -310,23 +311,22 @@ plt.show()
 # -----------------------------------------------------------------------------------------------------------------------
 # Question 4 -----------------------------------------------------------------------------------------------------------
 # -----------------------------------------------------------------------------------------------------------------------
-
+"""
 market_cap = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Market Cap").dropna()
 market_cap_nafree = market_cap.iloc[1::, 2::]
 market_cap_nafree = pd.DataFrame.transpose(market_cap_nafree)
 market_cap_nafree.index = pd.to_datetime(market_cap_nafree.index)
 market_cap_nafree = pd.DataFrame.resample(market_cap_nafree, "M").mean()
-stock = market_cap_nafree.pct_change()
+stock = market_cap_nafree / market_cap_nafree.shift(1)
 stock = stock.iloc[1:, :]
 cov_excess = stock.cov()
 covin = cov_excess
 pct_change_mean = np.mean(stock)
 pct_change_mean = np.array(pct_change_mean)
 cov_excess = np.array(cov_excess)
-prtf_mean = []
-prtf_cov = []
 
-def return_min_var_alpha_POSNEG(mu, cov, gen=20000, sharesnumber=97):
+
+def return_min_var_alpha_POSNEG(mu, cov, gen=5000, sharesnumber=97):
     portfolio_returns = []
     portfolio_volatilities = []
     weights_vec = []
@@ -340,11 +340,12 @@ def return_min_var_alpha_POSNEG(mu, cov, gen=20000, sharesnumber=97):
     portfolio_volatilities = np.array(portfolio_volatilities)
     weights_vec = np.array(weights_vec)
     index_min = np.argmin(portfolio_volatilities)
+    min = np.min(portfolio_volatilities)
     ret = portfolio_returns[index_min]
     alpha = weights_vec[index_min]
     return alpha
 
-def var_gaussian(r, level=10, modified=True):
+def var_gaussian(r, level=10, modified=False):
     # compute the Z score assuming it was Gaussian
     z = sp.norm.ppf(level / 100)
     if modified:
@@ -356,65 +357,54 @@ def var_gaussian(r, level=10, modified=True):
              (z ** 3 - 3 * z) * (k - 3) / 24 -
              (2 * z ** 3 - 5 * z) * (s ** 2) / 36
              )
-    return -(r.mean() + z * np.std(r))
+    return -(np.mean(r) + z * np.std(r))
 
-def ES(r, cov, alpha=1):
+def print_info(prtf_name, returns, cov, weights, period=12):
+    print(str(prtf_name) + " annual volatility of " + str(np.sqrt(np.dot(np.transpose(weights), np.dot(cov, weights))) * period))
+    print(str(prtf_name)+" annual average return of " + str((((np.mean(returns)))) * period))
+    print(str(prtf_name)+" MAX  averaged Return : " + str(((np.max(returns))) * period))
+    print(str(prtf_name)+" MIN  averaged Return : " + str(((np.min(returns))) * period))
+    print(str(prtf_name)+" VaR : " + str(np.mean(var_gaussian(returns))))
+    print(str(prtf_name)+" ES : " + str(ES(np.mean(returns), np.sqrt(np.dot(np.transpose(weights), np.dot(cov, weights))))))
+
+def ES(r, cov, alpha=5):
     CVaR_n = alpha ** -1 * sp.norm.pdf(sp.norm.ppf(alpha)) * cov - r
     return CVaR_n
 
-return_min_var_alpha_POSNEG(pct_change_mean,cov_excess)
+saved_returns = []
+saved_volat = []
+saved_alphas = []
 
-min = np.min(portfolio_volatilities)
-index_min = np.argmin(portfolio_volatilities)
+for i in range(275):
+    print(str(i)+"/275 monthly periods completed")
+    alpha = return_min_var_alpha_POSNEG(stock, cov_excess)
+    saved_returns.append(stock * alpha)
+    saved_volat.append(np.sqrt(np.dot(alpha.T, np.dot(cov_excess, alpha))))
+    saved_alphas.append(alpha)
 
-print("The GMVP has an annualized volatility of " + str(min * 12))
-print("GMVP Annualized average return is : " + str((np.mean(portfolio_returns[index_min]) - 1) * 12))
+mvp_returns = []
+for i in range (len(saved_returns)):
+  mvp_returns.append(saved_returns[i].mean())
 
-stock_for_mv = weights_vec[index_min] * stock
-stock_for_mv = pd.DataFrame.mean(stock_for_mv, axis=1)
-print("GMV portfolio MIN ANN Return: " + str(pd.DataFrame.min(stock_for_mv) * 12))
-print("GMV portfolio MAX ANN Return : " + str(pd.DataFrame.max(stock_for_mv) * 12))
+print_info("GMVP",mvp_returns,cov_excess,np.mean(saved_alphas, axis=0))
 
-
-
-
-print("MVP portfolio VaR " + str(var_gaussian(stock_for_mv)))
-print("MVP portfolio ES " + str(ES(stock_for_mv.mean(),
-                                   cov=portfolio_volatilities[index_min])))
+# Equal weight portfolio :
 
 equal_weight = np.full(97, 1 / 97)
 EW_returns = np.mean(equal_weight * stock, axis=1)
-print("The equally weighted portfolio have an annual volatility of " +
-      str(np.sqrt(np.dot(equal_weight.T, np.dot(cov_excess, equal_weight))) * 12))
-print("EW portfolio average annual return : " + str((((np.mean(EW_returns)))) * 12))
-print("EW portfolio MAX ANN Return : " + str(((np.max(EW_returns))) * 12))
-print("EW portfolio MIN ANN Return : " + str(((np.min(EW_returns))) * 12))
-print("EW portfolio VaR : " + str(var_gaussian(EW_returns)))
-print("EW portfolio ES : " + str(
-    ES(EW_returns.mean(), np.sqrt(np.dot(equal_weight.T, np.dot(cov_excess, equal_weight))))))
+
+print_info("EW",EW_returns,cov_excess,equal_weight )
 
 # Value weighted portfolio base on average monthly market cap on considered period 1999-2021:
 
 VW_weight = market_cap_nafree.mean()
 VW_weight /= sum(VW_weight)
 VW_returns = np.mean(VW_weight * stock, axis=1)
-
-
-def print_info(prtf_name, returns, cov, weights, period=12):
-    print(str(prtf_name) + " annual volatility of " + str(np.sqrt(np.dot(weights.T, np.dot(cov, weights))) * period))
-    print(str(prtf_name)+" annual average return of " + str((((np.mean(returns)))) * period))
-    print(str(prtf_name)+" MAX  averaged Return : " + str(((np.max(returns))) * period))
-    print(str(prtf_name)+" MIN  averaged Return : " + str(((np.min(returns))) * period))
-    print(str(prtf_name)+" VaR : " + str(var_gaussian(returns)))
-    print(str(prtf_name)+" ES : " + str(ES(returns.mean(), np.sqrt(np.dot(weights.T, np.dot(cov, weights))))))
-
-
 print_info("value weighted", VW_returns, cov_excess, VW_weight)
-
+"""
 # ---------------------------------------------------------------------------------------------------------------------
 # QUESTION 5 ---------------------------------------------------------------------------------------------------------
 # ---------------------------------------------------------------------------------------------------------------------
-"""
 
 # Resample to the first 5 years / 60 months :
 market_cap = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Market Cap").dropna()
@@ -456,15 +446,15 @@ def print_info(prtf_name, returns, cov, weights, period=12):
     print(str(prtf_name)+" annual average return of " + str((((np.mean(returns)))) * period))
     print(str(prtf_name)+" MAX  Return : " + str(((np.max(returns))) * period))
     print(str(prtf_name)+" MIN  Return : " + str(((np.min(returns))) * period))
-    print(str(prtf_name)+" VaR (on period data): " + str(var_gaussian(returns)))
+    print(str(prtf_name)+" VaR (on period data): " + str(np.mean(var_gaussian(returns))))
     print(str(prtf_name)+" ES (on period data): " + str(ES(np.mean(returns), np.sqrt(np.dot(weights.T, np.dot(cov, weights))))))
 
-def return_min_var_alpha_POSNEG(mu, cov, gen=20000, sharesnumber=97):
+def return_min_var_alpha_POS(mu, cov, gen=200, sharesnumber=97):
     portfolio_returns = []
     portfolio_volatilities = []
     weights_vec = []
     for x in range(gen):
-        weights = np.random.uniform(-1, 1, sharesnumber)
+        weights = np.random.uniform(0, 1, sharesnumber)
         weights /= np.sum(weights)
         portfolio_returns.append(np.sum(mu * weights))
         portfolio_volatilities.append(np.sqrt(np.dot(weights.T, np.dot(cov, weights))))
@@ -570,9 +560,6 @@ for i in range(1,205):
 print(print_info("Value weighted rolling window portfolio",saved_returns, cov_excess,equal_weight))
 
 
-print(saved_returns)
-print(len(saved_returns))
-
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -580,7 +567,7 @@ print(len(saved_returns))
 # ---------------------------------------------------------------------------------------------------------------------
 # #the function under is written for positive weights only,
 # Resample to the first 5 years / 60 months :
-
+"""
 market_cap = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Market Cap").dropna()
 market_cap_nafree = market_cap.iloc[1::, 2::]
 market_cap_nafree = pd.DataFrame.transpose(market_cap_nafree)
