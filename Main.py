@@ -6,12 +6,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 import openpyxl
 import scipy.optimize as spop
+import scipy.stats
 import scipy.stats as sp
 import arch
 from arch import arch_model
 from arch.univariate import ARCH, GARCH, Normal
 import matplotlib.cm as cm
-
+import arch
+from arch import arch_model
+from arch.univariate import ARCH, GARCH, Normal
 
 
 # !!!!!!!!!  CHUNKS TO BE RUN AT THE SAME TIME !!!!!!!!!!!!!!! :
@@ -998,16 +1001,15 @@ for i in range(len(saved_returns)):
 print(print_info("Poos/b+(0.75) portfolio on 6 year rolling window GMVP", Poosb_returns, cov_excess,
                  saved_alphas_2[np.argmin(saved_covariances)]))
 """
+
 # -------------------------------------------------------------------------------------
-# PART 2
+# PART 2 USING POOS b+
 # -------------------------------------------------------------------------------------
 
 # ----------------------------------------------------------------------------------------------------------------------
 # QUESTION 1   -------------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------------------------
-
-
-
+"""
 #DATA For carbon intensity
 
 co2 = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="CO2 Emissions")
@@ -1042,15 +1044,12 @@ market_cap_nafree = market_cap_nafree.T
 merged_co2_cap = market_cap_nafree.merge(c_intensity, left_index = True, right_index = True)
 market_cap_nafree = merged_co2_cap.iloc[::,0:276]
 market_cap_nafree = market_cap_nafree.T
-# pct_change = market_cap_nafree.pct_change(axis=0)
-# pct_change = pct_change.iloc[1:,:]
-# pct_change_mean = np.mean(pct_change, axis=0)
 stock = market_cap_nafree / market_cap_nafree.shift(1)
 stock = stock.iloc[1:, :]
 cov_excess = stock.cov()
 pct_change_mean = np.mean(stock)
 
-def return_min_var_alpha_POS(mu, cov, gen=2000, sharesnumber = 92):
+def return_min_var_alpha_POS(mu, cov, gen=200, sharesnumber = 92):
 
     portfolio_returns = []
     portfolio_volatilities = []
@@ -1115,8 +1114,7 @@ for i in range(204):
     saved_alphas.append(alpha)
     saved_covs.append(cov_excess)
 
-#print(print_info("First 6 year out of sample GMVP",saved_returns[0],saved_covariances[0], saved_alphas[0]))
-Poos_returns = []
+print_info("First 6 year out of sample GMVP",saved_returns[0],saved_covariances[0], saved_alphas[0])
 
 #New importation of the daily returns, and reducing the set of those with a carbon intensity
 
@@ -1127,6 +1125,7 @@ market_cap_nafree = merged_co2_cap.iloc[::,0:6001]
 market_cap_nafree = market_cap_nafree.T
 stock = market_cap_nafree / market_cap_nafree.shift(1)
 stock = stock.iloc[1:, :]
+stock = stock.astype(float)
 cov_excess = stock.cov()
 pct_change_mean = np.mean(stock)
 daily_returns = []
@@ -1141,28 +1140,22 @@ for i in range (20,4000):
     vol = saved_alphas[int((i/20))-1] @ saved_covs[int((i/20))-1] @ saved_alphas[int((i/20))-1]
     daily_vol.append(vol)
 
-"""
 
-print(daily_vol)
-
-
-print(print_info("Poos/b+ portfolio on 6 year rolling window GMVP (daily returns)",returns,cov_excess, saved_alphas[np.argmin(saved_covariances)]))
+"print(print_info("Poos/b+ portfolio on 6 year rolling window GMVP (daily returns)",daily_returns,cov_excess, saved_alphas[np.argmin(saved_covariances)]))
 
 
-"""
+
+
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 # QUESTION 2  -------------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------------------------
 
-
-
 # Finding the VaR
 
 daily_returns_sorted = daily_returns.sort()
 df_D_returns = pd.DataFrame (daily_returns, columns = ['Daily Returns'])
-
-
 
 def Daily_return_index_number(a):
     return a * len(df_D_returns.index)
@@ -1170,17 +1163,16 @@ def Daily_return_index_number(a):
 
 # Values per IC : 90% = 298 ; 95% = 199 ; 99% = 40
 
-
 VAR_90 = df_D_returns.iloc[298]
 VaR_95 = df_D_returns.iloc[199]
 VaR_99 = df_D_returns.iloc[40]
 
 
-"""
+
 print(VAR_90)
 print(VaR_95)
 print(VaR_99)
-"""
+
 # Calculating the Expected short fall : Definition = mean of the tail of the distribution
 
 pool_90 = df_D_returns.iloc[0:298]
@@ -1198,25 +1190,210 @@ print(ES_99)
 # ----------------------------------------------------------------------------------------------------------------------
 # QUESTION 3  -------------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------------------------
+#Estimating the data generating process using a GARCH(1,1) model :
+
 
 #calculate GARCH(1,1)
-"""
-am = arch_model(dail_returns,p=1,q=1, dist= "skewt",rescale='false')
+
+print(scipy.stats.normaltest(daily_returns))
+am = arch_model(daily_returns,p=1,q=1, vol="GARCH")
 garch_output = am.fit(disp='off')
 garch_output.summary()
 print(garch_output)
 
-
-
-# use : omega = 1.9743e-05 , alpha = 0.05 , beta = 0.93
-# volatility = omega + aplha*residu au carré t-1 + beta * variance from previous period
-
-
+# DGT test for adequacy of the model on alpha and beta (chisquare) :
+"""
 
 
 
 # ----------------------------------------------------------------------------------------------------------------------
 # QUESTION 4   -------------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------------------------
-Christoffersen_test = 
+
+
+#using package vartests to implement the Christoffersen duration test :
+
+
+# -------------------------------------------------------------------------------------
+# PART 2 USING POOS b+ (0.75)
+# -------------------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------------------------------------------------
+# QUESTION 1  Requires to run qst 8 in the first place ------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------------------------------------
+
+co2 = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="CO2 Emissions")
+revenue = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Revenue")
+
+co2 = co2.iloc[::, 2::]
+co2 = pd.DataFrame.transpose(co2)
+co2.index = pd.to_datetime(co2.index)
+co2 = pd.DataFrame.resample(co2, "YS").mean()
+co2 = co2.iloc[21,::]
+
+revenue = revenue.iloc[::, 2::]
+revenue = pd.DataFrame.transpose(revenue)
+revenue.index = pd.to_datetime(revenue.index)
+revenue = pd.DataFrame.resample(revenue, "YS").mean()
+revenue = revenue.iloc[21,::]
+
+c_intensity = co2/revenue
+c_intensity = c_intensity.dropna()
+"print(c_intensity)"
+
+#portfolio with positive weights with only those with a carbon intensity surveyed (Poos/b+) :
+
+
+market_cap = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Market Cap").dropna()
+market_cap_nafree = market_cap.iloc[1::, 2::]
+market_cap_nafree = pd.DataFrame.transpose(market_cap_nafree)
+market_cap_nafree.index = pd.to_datetime(market_cap_nafree.index)
+market_cap_nafree = pd.DataFrame.resample(market_cap_nafree, "M").mean()
+#market_cap_nafree = market_cap_nafree.iloc[:72, :]
+market_cap_nafree = market_cap_nafree.T
+merged_co2_cap = market_cap_nafree.merge(c_intensity, left_index = True, right_index = True)
+market_cap_nafree = merged_co2_cap.iloc[::,0:276]
+market_cap_nafree = market_cap_nafree.T
+stock = market_cap_nafree / market_cap_nafree.shift(1)
+stock = stock.iloc[1:, :]
+cov_excess = stock.cov()
+pct_change_mean = np.mean(stock)
+
+def return_min_var_alpha_POS(mu, cov, gen=200, sharesnumber = 92):
+
+    portfolio_returns = []
+    portfolio_volatilities = []
+    weights_vec = []
+    for x in range(gen):
+        weights = np.random.uniform(0, 1, sharesnumber)
+        weights /= np.sum(weights)
+        portfolio_returns.append(np.sum(mu * weights))
+        portfolio_volatilities.append(np.sqrt(np.dot(weights.T, np.dot(cov, weights))))
+        weights_vec.append(weights)
+    portfolio_returns = np.array(portfolio_returns)
+    portfolio_volatilities = np.array(portfolio_volatilities)
+    weights_vec = np.array(weights_vec)
+    index_min = np.argmin(portfolio_volatilities)
+    ret = portfolio_returns[index_min]
+    alpha = weights_vec[index_min]
+    return alpha
+
+def var_gaussian(r, level=10, modified=False):
+    # compute the Z score assuming it was Gaussian
+    z = sp.norm.ppf(level / 100)
+    if modified:
+        # modify the Z score based on observed skewness and kurtosis
+        s = sp.skew(r)
+        k = sp.kurtosis(r)
+        z = (z +
+             (z ** 2 - 1) * s / 6 +
+             (z ** 3 - 3 * z) * (k - 3) / 24 -
+             (2 * z ** 3 - 5 * z) * (s ** 2) / 36
+             )
+    return -(np.mean(r) + z * np.std(r))
+
+def ES(r, cov, alpha=1):
+    CVaR_n = alpha ** -1 * sp.norm.pdf(sp.norm.ppf(alpha)) * cov - r
+    return CVaR_n
+
+def print_info(prtf_name, returns, cov, weights, period=12):
+    print(str(prtf_name) + " annual volatility of " + str(np.sqrt(np.dot(weights.T, np.dot(cov, weights))) * period))
+    print(str(prtf_name)+" annual average return of " + str((((np.mean(returns)))) * period))
+    print(str(prtf_name)+" MAX  Return : " + str(((np.max(returns))) * period))
+    print(str(prtf_name)+" MIN  Return : " + str(((np.min(returns))) * period))
+    print(str(prtf_name)+" VaR (on period data): " + str(var_gaussian(returns)))
+    print(str(prtf_name)+" ES (on period data): " + str(ES(np.mean(returns), np.sqrt(np.dot(weights.T, np.dot(cov, weights))))))
+
+saved_returns = []
+saved_covariances = []
+saved_alphas = []
+saved_covs = []
+
+#Recompute the alphas for each monthly period
+
+for i in range(204):
+    market_cap_sixyear = market_cap_nafree.iloc[i:i + 72, :]
+    stock = market_cap_sixyear / market_cap_sixyear.shift(1)
+    stock = stock.iloc[1:, :]
+    cov_excess = stock.cov()
+    pct_change_mean = np.mean(stock)
+    print(str(i)+"/203 monthly periods completed")
+    alpha = return_min_var_alpha_POS(pct_change_mean,cov_excess)
+    saved_returns.append(pct_change_mean * alpha)
+    saved_covariances.append(np.sqrt(np.dot(alpha.T, np.dot(cov_excess, alpha))))
+    saved_alphas.append(alpha)
+    saved_covs.append(cov_excess)
+
+saved_alphas = pd.DataFrame(saved_alphas)
+
+for i in range(203):
+    for x in range(92):
+        if c_intensity.iloc[x] > c_intensity.mean():
+            saved_alphas.iloc[i, x] *= 0.6
+            saved_alphas.iloc[i, :] /= sum(saved_alphas.iloc[i, :])
+
+saved_alphas = np.array(saved_alphas)
+"print(saved_alphas)"
+
+#New importation of the daily returns, and reducing the set of those with a carbon intensity
+
+market_cap = pd.read_excel("Data QARM-2.xlsx", engine="openpyxl", sheet_name="Market Cap").dropna()
+market_cap_nafree = market_cap.iloc[1::, 2::]
+merged_co2_cap = market_cap_nafree.merge(c_intensity, left_index = True, right_index = True)
+market_cap_nafree = merged_co2_cap.iloc[::,0:6001]
+market_cap_nafree = market_cap_nafree.T
+stock = market_cap_nafree / market_cap_nafree.shift(1)
+stock = stock.iloc[1:, :]
+stock = stock.astype(float)
+cov_excess = stock.cov()
+pct_change_mean = np.mean(stock)
+daily_returns = []
+daily_vol = []
+total_return = []
+
+for i in range (20,4000):
+    print(i)
+    returns = stock.iloc[i,:] @ saved_alphas[int((i/20)-1)]
+    total_return.append(np.multiply(stock.iloc[i,:],saved_alphas[int((i/20)-1)]))
+    daily_returns.append(returns)
+    vol = saved_alphas[int((i/20))-1] @ saved_covs[int((i/20))-1] @ saved_alphas[int((i/20))-1]
+    daily_vol.append(vol)
+
 """
+print(print_info("Poos/b+(0.75) portfolio on 6 year rolling window GMVP (daily returns)",daily_returns,cov_excess, saved_alphas[np.argmin(saved_covariances)]))
+"""
+
+# ----------------------------------------------------------------------------------------------------------------------
+# QUESTION 2  -------------------------------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------------------------------------
+# Finding the VaR
+
+daily_returns_sorted = daily_returns.sort()
+df_D_returns = pd.DataFrame (daily_returns, columns = ['Daily Returns'])
+
+def Daily_return_index_number(a):
+    return a * len(df_D_returns.index)
+"print(Daily_return_index_number(0.01))"
+
+# Values per IC : 90% = 298 ; 95% = 199 ; 99% = 40
+
+VAR_90 = df_D_returns.iloc[298]
+VaR_95 = df_D_returns.iloc[199]
+VaR_99 = df_D_returns.iloc[40]
+
+"""
+print(VAR_90)
+print(VaR_95)
+print(VaR_99)
+"""
+# Calculating the Expected short fall : Definition = mean of the tail of the distribution
+
+pool_90 = df_D_returns.iloc[0:298]
+ES_90 = pool_90.mean(axis=0)
+print(ES_90)
+pool_95 = df_D_returns.iloc[0:199]
+ES_95 = pool_95.mean(axis=0)
+print(ES_95)
+pool_99 = df_D_returns.iloc[0:40]
+ES_99 = pool_99.mean(axis=0)
+print(ES_99)
